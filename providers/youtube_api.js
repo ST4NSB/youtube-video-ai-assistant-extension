@@ -1,7 +1,3 @@
-const YOUTUBE_URL = "https://www.youtube.com/watch?v=";
-
-// -----------------------------------------------------------
-
 async function getYoutubeVideoCaptions(videoId) {
   const captionsUrl = await getYoutubeCaptionVideoLink(videoId);
   const captions = await getYoutubeCaptionsByCaptionsUrl(captionsUrl);
@@ -9,13 +5,14 @@ async function getYoutubeVideoCaptions(videoId) {
 }
 
 async function getYoutubeCaptionVideoLink(videoId) {
-  const response = await fetch(`${YOUTUBE_URL}${videoId}`, {
-    method: "GET",
+  const youTubeConfig = getYouTubeConfigObject();
+  const response = await fetch(`${youTubeConfig.YOUTUBE_API.URL}${videoId}`, {
+    method: youTubeConfig.YOUTUBE_API.METHOD,
   });
 
   const html = await response.text();
 
-  const regex = new RegExp(/"captionTracks":\[\{"baseUrl":"(.*?)"/);
+  const regex = new RegExp(youTubeConfig.CAPTION_EXTRACT_REGEX);
   const match = regex.exec(html);
 
   if (!match || match.length === 0) {
@@ -42,12 +39,26 @@ async function getYoutubeCaptionsByCaptionsUrl(captionsUrl) {
     const message = text.textContent;
 
     let caption = {
-      start,
-      duration,
+      start: parseCaptionTimeStampToYoutubeVideoTimeStamp(start),
+      duration: parseCaptionTimeStampToYoutubeVideoTimeStamp(duration),
       message,
     };
     captions = [...captions, caption];
   }
 
   return captions;
+}
+
+function parseCaptionTimeStampToYoutubeVideoTimeStamp(timestamp) {
+  // Video start time (in seconds)
+  const videoStart = 0;
+
+  // Calculate the absolute start time (in seconds)
+  const absoluteStart = timestamp + videoStart;
+
+  // Convert the absolute start time to the video timestamp format
+  const date = new Date(absoluteStart * 1000); // Convert to milliseconds
+  const convertedTimestamp = date.toISOString().substr(11, 12);
+
+  return convertedTimestamp;
 }

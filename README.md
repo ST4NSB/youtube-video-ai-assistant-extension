@@ -4,6 +4,6 @@ Developing a Google Chrome extension for YouTube that utilizes the captions and 
 
 TODO:
 
+- get youtube captions - DONE
 - change manifest url to youtube
-- get youtube captions
 - implement 1st mode for chatgpt
