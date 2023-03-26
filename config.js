@@ -12,7 +12,6 @@ async function getEnvironmentVariables() {
 async function getChatGptConfigObject() {
   return {
     CHATGPT_MODE: 1, // 1 - CHATGPT_CHAT_URL, 2 - CHATGPT_PROMPT_URL
-    TOKEN_MAX_SIZE: 3500,
     CHATGPT_CHAT_API: {
       URL: "https://api.openai.com/v1/chat/completions",
       METHOD: "POST",
@@ -21,6 +20,8 @@ async function getChatGptConfigObject() {
       URL: "https://api.openai.com/v1/completions",
       METHOD: "POST",
     },
+    CHATGPT_MODEL: "gpt-3.5-turbo",
+    CHATGPT_TEMPERATURE: 0.16,
 
     ...(await getEnvironmentVariables()),
   };
@@ -32,6 +33,7 @@ function getYouTubeConfigObject() {
       URL: "https://www.youtube.com/watch?v=",
       METHOD: "GET",
     },
+    CAPTIONS_TOKEN_MAX_SIZE: 3800,
     CAPTION_EXTRACT_REGEX: /"captionTracks":\[\{"baseUrl":"(.*?)"/,
   };
 }
