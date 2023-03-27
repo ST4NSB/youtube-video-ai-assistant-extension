@@ -6,24 +6,28 @@ function renderChatBox() {
 
   const input = document.createElement("input");
   input.type = "text";
-  input.placeholder = "Enter text here";
+  input.placeholder = "Ask ChatGPT here";
   input.id = "input-text";
 
   const button = document.createElement("button");
-  button.innerHTML = "Send";
+  button.innerHTML = "SEND";
   button.id = "send-to-chat";
 
   const response = document.createElement("div");
-  response.placeholder = "Server response";
+  response.innerHTML = "ChatGPT will answer all your questions";
   response.id = "chat-response";
   response.readOnly = true;
 
-  const container = document.createElement("div");
-  container.id = "chat-box";
-  container.appendChild(input);
-  container.appendChild(button);
-  container.appendChild(response);
+  const textContainer = document.createElement("div");
+  textContainer.id = "text-box";
+  textContainer.appendChild(input);
+  textContainer.appendChild(button);
+
+  const mainContainer = document.createElement("div");
+  mainContainer.id = "chat-box";
+  mainContainer.appendChild(textContainer);
+  mainContainer.appendChild(response);
 
   const youtubeComponent = document.getElementById("above-the-fold");
-  youtubeComponent.appendChild(container);
+  youtubeComponent.appendChild(mainContainer);
 }

@@ -1,5 +1,6 @@
 async function getChatGptAnswer(videoId, question, captionBuckets) {
   const config = await getChatGptConfigObject();
+  const mainConfig = getMainConfig();
   let answers = [];
   for (let i = 0; i < captionBuckets.length; i++) {
     const bodyMessage = formatChatGptCaptionBody(
@@ -9,6 +10,10 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
     );
 
     const response = await getChatGptResponse(bodyMessage, config);
+    if (mainConfig.DEBUG) {
+      console.log(`Unfiltered ChatGPT Response-Nr ${i}: ${response}`);
+    }
+
     answers = [...answers, response];
   }
 
@@ -25,19 +30,39 @@ async function formatChatGptFinalResponse(videoId, response) {
   const chatGptConfig = await getChatGptConfigObject();
   const youtubeConfig = getYouTubeConfigObject();
 
-  const regex = new RegExp(chatGptConfig.TIMESTAMP_EXTRACT_REGEX);
-  const matches = response.matchAll(regex);
+  const timestampRegex = new RegExp(chatGptConfig.TIMESTAMP_EXTRACT_REGEX);
+  const matches = response.matchAll(timestampRegex);
 
   let formattedResponse = response;
   for (const match of matches) {
     const timestamp = match[1];
     formattedResponse = formattedResponse.replace(
       match[0],
-      `<a href="${youtubeConfig.YOUTUBE_API.URL}${videoId}&t=${timestamp}">${timestamp}</a>`
+      `<a href="${
+        youtubeConfig.YOUTUBE_API.URL
+      }${videoId}&t=${timestamp}">${parseCaptionTimeStampToYoutubeVideoTimeStamp(
+        timestamp
+      )}</a>`
     );
   }
 
+  formattedResponse = formattedResponse.replace("\n", "<br>");
   return formattedResponse;
+}
+
+function parseCaptionTimeStampToYoutubeVideoTimeStamp(timestamp) {
+  timestamp = timestamp + ".00";
+  // Video start time (in seconds)
+  const videoStart = 0;
+
+  // Calculate the absolute start time (in seconds)
+  const absoluteStart = timestamp + videoStart;
+
+  // Convert the absolute start time to the video timestamp format
+  const date = new Date(absoluteStart * 1000); // Convert to milliseconds
+  const convertedTimestamp = date.toISOString().substr(11, 12);
+
+  return convertedTimestamp;
 }
 
 function formatChatGptAnswersBody(answers, config) {
@@ -97,13 +122,23 @@ function formatChatGptCaptionBody(question, captionBucket, config) {
   messages = [
     ...messages,
     {
-      role: "user",
-      content: `QUESTION:${question}`,
+      role: "system",
+      content:
+        "IMPORTANT 1:Answer the QUESTION including the timestamp, only if it's relevant, in the following format: timestamp 20",
+    },
+    {
+      role: "system",
+      content:
+        "IMPORTANT 2:DO NOT include a list of timestamps,ALWAYS use individual timestamps",
+    },
+    {
+      role: "system",
+      content:
+        "IMPORTANT 3:you can include end timestamps, but do NOT add hypen or dashes in the answer",
     },
     {
       role: "user",
-      content:
-        "IMPORTANT:Answer the QUESTION including the timestamp, only if it's relevant, in the following format: timestamp 20",
+      content: `QUESTION:${question}`,
     },
   ];
 

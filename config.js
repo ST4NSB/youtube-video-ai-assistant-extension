@@ -18,7 +18,7 @@ function getMainConfig() {
 async function getChatGptConfigObject() {
   return {
     CHATGPT_MODEL: "gpt-3.5-turbo",
-    CHATGPT_TEMPERATURE: 0.45,
+    CHATGPT_TEMPERATURE: 0.62,
 
     CHATGPT_MODE: 1, // 1 - CHATGPT_CHAT_URL, 2 - CHATGPT_PROMPT_URL
     CHATGPT_CHAT_API: {
@@ -30,7 +30,7 @@ async function getChatGptConfigObject() {
       METHOD: "POST",
     },
 
-    TIMESTAMP_EXTRACT_REGEX: /timestamp\s(\d+)/g,
+    TIMESTAMP_EXTRACT_REGEX: /[tT]imestamp\s(\d+)/g,
     ...(await getEnvironmentVariables()),
   };
 }
@@ -38,7 +38,7 @@ async function getChatGptConfigObject() {
 function getYouTubeConfigObject() {
   return {
     // the number of allowed caption sentences with the format: timestamp|message
-    CAPTIONS_SENTENCES_MAX_SIZE: 170,
+    CAPTIONS_SENTENCES_MAX_SIZE: 200,
     DETAILED_CAPTION_TIMESTAMPS: false,
 
     YOUTUBE_API: {

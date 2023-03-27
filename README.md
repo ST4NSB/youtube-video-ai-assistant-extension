@@ -7,13 +7,15 @@ TODO:
 - get youtube captions - DONE
 - change manifest url to youtube - DONE
 - implement 1st mode for chatgpt - DONE
-- (maybe not) implmenet the timestamp reverse step from hours:minutes:seconds to milliseconds (reverse of parseCaptionTimeStampToYoutubeVideoTimeStamp)
+- include path: youtube.com/watch in manifest - DONE
+- include the title of the video to the initial requests (included in each separate request) - DONE
+- instead of reverse timestamp function, let the time with milliseconds (for performance) and include a text for chatgpt to say smth like: {TIMESTAMP:153} - DONE
+- ^ preprocess the above timestamp from the chatgpt response to a anchor link - DONE
+
+- disable text input and button on waiting for chatgpt response
+
 - move these TODO in issues
-- change config file logic, instead of function, just do the object
-- include path: youtube.com/watch in manifest
-- include the title of the video to the initial requests (included in each separate request)
-- instead of reverse timestamp function, let the time with milliseconds (for performance) and include a text for chatgpt to say smth like: {TIMESTAMP:153}
-- ^ preprocess the above timestamp from the chatgpt response to a anchor link
 - implement 2nd mode for chatgpt
 - clean some providers & functions
+- change config file logic, instead of function, just do the object
 - test on longer videos
