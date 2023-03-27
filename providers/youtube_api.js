@@ -5,9 +5,30 @@ async function getYoutubeVideoCaptionBuckets(videoId) {
 
   const captionBuckets = getCaptionBuckets(
     captions,
-    config.CAPTIONS_TOKEN_MAX_SIZE
+    config.CAPTIONS_SENTENCES_MAX_SIZE
   );
   return captionBuckets;
+}
+
+function getCaptionBuckets(captions, bucketSize) {
+  let buckets = [];
+  let currBucket = [];
+  for (let i = 0; i < captions.length; i++) {
+    let caption = `${captions[i].start}|${captions[i].message}`;
+    let currBucketSize = currBucket.length;
+
+    if (currBucketSize + 1 > bucketSize) {
+      buckets = [...buckets, currBucket];
+      currBucket = [caption];
+    } else {
+      currBucket = [...currBucket, caption];
+    }
+  }
+
+  if (currBucket.length !== 0) {
+    buckets = [...buckets, currBucket];
+  }
+  return buckets;
 }
 
 async function getYoutubeCaptionVideoLink(videoId, config) {
@@ -21,7 +42,7 @@ async function getYoutubeCaptionVideoLink(videoId, config) {
   const match = regex.exec(html);
 
   if (!match || match.length === 0) {
-    throw new Error("Caption link was NOT found!");
+    throw new Error("Caption link was NOT found.");
   }
 
   const captionUrl = match[1].replace(/\\u0026/g, "&");
@@ -66,44 +87,4 @@ function parseCaptionTimeStampToYoutubeVideoTimeStamp(timestamp) {
   const convertedTimestamp = date.toISOString().substr(11, 12);
 
   return convertedTimestamp;
-}
-
-function getCaptionBuckets(youTubeCaptions, tokenMaxSize) {
-  const formattedCaptions = formatCaptions(youTubeCaptions);
-  const buckets = getCaptionMessageBuckets(formattedCaptions, tokenMaxSize);
-  return buckets;
-}
-
-function formatCaptions(youTubeCaptions) {
-  let captionStr = "";
-  for (let i = 0; i < youTubeCaptions.length; i++) {
-    let caption = youTubeCaptions[i];
-    captionStr += `${caption.start}|${caption.message}\\n`;
-  }
-  return captionStr;
-}
-
-function getCaptionMessageBuckets(formattedCaptions, tokenMaxSize) {
-  const captions = formattedCaptions.split("\\n");
-  const bucketSize = tokenMaxSize;
-
-  let buckets = [];
-  let currBucket = [];
-  for (let i = 0; i < captions.length; i++) {
-    let caption = captions[i];
-    let currBucketSize = currBucket.reduce(
-      (total, str) => total + str.length,
-      0
-    );
-
-    if (currBucketSize + caption.length > bucketSize) {
-      buckets = [...buckets, currBucket];
-      currBucket = [caption];
-    } else {
-      currBucket = [...currBucket, caption];
-    }
-  }
-
-  buckets = [...buckets, currBucket];
-  return buckets;
 }

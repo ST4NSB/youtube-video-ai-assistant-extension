@@ -25,7 +25,7 @@ function formatChatGptAnswersBody(answers, config) {
     {
       role: "system",
       content:
-        "You are a helpful assistant. You will have some ChatGpt responses and you have to combine them in a single useful response.",
+        "You are a helpful assistant. You will have some ChatGpt responses and you have to combine them in a single useful response. Don't mention you are combining them.",
     },
   ];
 
@@ -35,7 +35,7 @@ function formatChatGptAnswersBody(answers, config) {
       ...messages,
       {
         role: "system",
-        content: `ChatGpt response number ${i}: ${answer}`,
+        content: `Chat-GPT response number ${i + 1}: ${answer}`,
       },
     ];
   }
@@ -55,12 +55,11 @@ function formatChatGptAnswersBody(answers, config) {
 }
 
 function formatChatGptCaptionBody(question, captionBucket, config) {
-  const questionMessage = `QUESTION:${question}`;
   let messages = [
     {
       role: "system",
       content:
-        "You are a helpful assistant.You will get a few youtube captions in the format timestamp and message like 00:02:13.080|message.After that, a QUESTION will be provided. Answer with the timestamp if possible.",
+        "You are a helpful assistant.You will get a few youtube captions in the format timestamp and message like 00:02:13.080|message.After that, a QUESTION will be provided.",
     },
   ];
 
@@ -78,7 +77,12 @@ function formatChatGptCaptionBody(question, captionBucket, config) {
     ...messages,
     {
       role: "user",
-      content: questionMessage,
+      content: `QUESTION:${question}`,
+    },
+    {
+      role: "user",
+      content:
+        "IMPORTANT:Answer the QUESTION including the timestamp if possible",
     },
   ];
 
