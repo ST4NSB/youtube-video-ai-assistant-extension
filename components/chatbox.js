@@ -1,4 +1,9 @@
 function renderChatBox() {
+  const chatboxDiv = document.getElementById("chat-box");
+  if (chatboxDiv) {
+    chatboxDiv.remove();
+  }
+
   const input = document.createElement("input");
   input.type = "text";
   input.placeholder = "Enter text here";
@@ -14,6 +19,7 @@ function renderChatBox() {
   response.readOnly = true;
 
   const container = document.createElement("div");
+  container.id = "chat-box";
   container.appendChild(input);
   container.appendChild(button);
   container.appendChild(response);
