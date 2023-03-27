@@ -12,4 +12,5 @@ TODO:
 - ^ instead of reverse timestamp function, let the time with milliseconds (for performance) and include a text for chatgpt to say smth like: {TIMESTAMP:153}
 - ^ preprocess the above timestamp from the chatgpt response to a anchor link
 - implement 2nd mode for chatgpt
+- clean some providers & functions
 - test on longer videos

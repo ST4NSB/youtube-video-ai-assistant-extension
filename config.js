@@ -12,7 +12,7 @@ async function getEnvironmentVariables() {
 async function getChatGptConfigObject() {
   return {
     CHATGPT_MODEL: "gpt-3.5-turbo",
-    CHATGPT_TEMPERATURE: 0.75,
+    CHATGPT_TEMPERATURE: 0.45,
 
     CHATGPT_MODE: 1, // 1 - CHATGPT_CHAT_URL, 2 - CHATGPT_PROMPT_URL
     CHATGPT_CHAT_API: {
