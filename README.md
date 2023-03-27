@@ -9,6 +9,7 @@ TODO:
 - implement 1st mode for chatgpt - DONE
 - (maybe not) implmenet the timestamp reverse step from hours:minutes:seconds to milliseconds (reverse of parseCaptionTimeStampToYoutubeVideoTimeStamp)
 - move these TODO in issues
+- change config file logic, instead of function, just do the object
 - include path: youtube.com/watch in manifest
 - include the title of the video to the initial requests (included in each separate request)
 - instead of reverse timestamp function, let the time with milliseconds (for performance) and include a text for chatgpt to say smth like: {TIMESTAMP:153}

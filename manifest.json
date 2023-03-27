@@ -25,6 +25,7 @@
 				"config.js",
 				"providers/youtube_api.js",
 				"providers/chatgpt_api.js",
+				"components/chatbox.js",
 				"main_page.js"
 			]
 		}

@@ -9,6 +9,12 @@ async function getEnvironmentVariables() {
   };
 }
 
+function getMainConfig() {
+  return {
+    DEBUG: true,
+  };
+}
+
 async function getChatGptConfigObject() {
   return {
     CHATGPT_MODEL: "gpt-3.5-turbo",
@@ -24,6 +30,7 @@ async function getChatGptConfigObject() {
       METHOD: "POST",
     },
 
+    TIMESTAMP_EXTRACT_REGEX: /timestamp\s(\d+)/g,
     ...(await getEnvironmentVariables()),
   };
 }
@@ -40,5 +47,6 @@ function getYouTubeConfigObject() {
     },
 
     CAPTION_EXTRACT_REGEX: /"captionTracks":\[\{"baseUrl":"(.*?)"/,
+    VIDEOID_EXTRACT_REGEX: /[?&]v=([^&]+)/,
   };
 }

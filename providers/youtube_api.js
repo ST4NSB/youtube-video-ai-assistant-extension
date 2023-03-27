@@ -1,3 +1,12 @@
+function getYoutubeVideoId() {
+  const config = getYouTubeConfigObject();
+  const currentUrl = window.location.href;
+  const videoIdRegex = new RegExp(config.VIDEOID_EXTRACT_REGEX);
+  const match = videoIdRegex.exec(currentUrl);
+  const videoId = match ? match[1] : null;
+  return videoId;
+}
+
 async function getYoutubeVideoCaptionBuckets(videoId) {
   const config = getYouTubeConfigObject();
   const captionsUrl = await getYoutubeCaptionVideoLink(videoId, config);

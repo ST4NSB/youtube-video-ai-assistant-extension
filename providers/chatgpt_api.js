@@ -1,4 +1,4 @@
-async function getChatGptAnswer(question, captionBuckets) {
+async function getChatGptAnswer(videoId, question, captionBuckets) {
   const config = await getChatGptConfigObject();
   let answers = [];
   for (let i = 0; i < captionBuckets.length; i++) {
@@ -14,10 +14,30 @@ async function getChatGptAnswer(question, captionBuckets) {
 
   if (answers.length > 1) {
     const answersBody = formatChatGptAnswersBody(answers, config);
-    return await getChatGptResponse(answersBody, config);
+    const answer = await getChatGptResponse(answersBody, config);
+    return await formatChatGptFinalResponse(videoId, answer);
   }
 
-  return answers[0];
+  return await formatChatGptFinalResponse(videoId, answers[0]);
+}
+
+async function formatChatGptFinalResponse(videoId, response) {
+  const chatGptConfig = await getChatGptConfigObject();
+  const youtubeConfig = getYouTubeConfigObject();
+
+  const regex = new RegExp(chatGptConfig.TIMESTAMP_EXTRACT_REGEX);
+  const matches = response.matchAll(regex);
+
+  let formattedResponse = response;
+  for (const match of matches) {
+    const timestamp = match[1];
+    formattedResponse = formattedResponse.replace(
+      match[0],
+      `<a href="${youtubeConfig.YOUTUBE_API.URL}${videoId}&t=${timestamp}">${timestamp}</a>`
+    );
+  }
+
+  return formattedResponse;
 }
 
 function formatChatGptAnswersBody(answers, config) {
@@ -83,11 +103,7 @@ function formatChatGptCaptionBody(question, captionBucket, config) {
     {
       role: "user",
       content:
-        "IMPORTANT:Answer the QUESTION including the timestamp (if it's relevant) in the following format:",
-    },
-    {
-      role: "user",
-      content: "{TIMESTAMP:190}",
+        "IMPORTANT:Answer the QUESTION including the timestamp, only if it's relevant, in the following format: timestamp 20",
     },
   ];
 
