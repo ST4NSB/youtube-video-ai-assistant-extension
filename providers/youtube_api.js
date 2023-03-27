@@ -1,7 +1,7 @@
 async function getYoutubeVideoCaptionBuckets(videoId) {
   const config = getYouTubeConfigObject();
   const captionsUrl = await getYoutubeCaptionVideoLink(videoId, config);
-  const captions = await getYoutubeCaptionsByCaptionsUrl(captionsUrl);
+  const captions = await getYoutubeCaptionsByCaptionsUrl(captionsUrl, config);
 
   const captionBuckets = getCaptionBuckets(
     captions,
@@ -49,7 +49,7 @@ async function getYoutubeCaptionVideoLink(videoId, config) {
   return captionUrl;
 }
 
-async function getYoutubeCaptionsByCaptionsUrl(captionsUrl) {
+async function getYoutubeCaptionsByCaptionsUrl(captionsUrl, config) {
   const response = await fetch(captionsUrl);
   const xmlString = await response.text();
 
@@ -65,8 +65,8 @@ async function getYoutubeCaptionsByCaptionsUrl(captionsUrl) {
     const message = text.textContent;
 
     let caption = {
-      start: parseCaptionTimeStampToYoutubeVideoTimeStamp(start),
-      duration: parseCaptionTimeStampToYoutubeVideoTimeStamp(duration),
+      start: formatTimestamp(start, config.DETAILED_CAPTION_TIMESTAMPS),
+      duration: formatTimestamp(duration, config.DETAILED_CAPTION_TIMESTAMPS),
       message,
     };
     captions = [...captions, caption];
@@ -75,16 +75,10 @@ async function getYoutubeCaptionsByCaptionsUrl(captionsUrl) {
   return captions;
 }
 
-function parseCaptionTimeStampToYoutubeVideoTimeStamp(timestamp) {
-  // Video start time (in seconds)
-  const videoStart = 0;
+function formatTimestamp(timestamp, allowDetailedTimestamps) {
+  if (allowDetailedTimestamps) {
+    return timestamp;
+  }
 
-  // Calculate the absolute start time (in seconds)
-  const absoluteStart = timestamp + videoStart;
-
-  // Convert the absolute start time to the video timestamp format
-  const date = new Date(absoluteStart * 1000); // Convert to milliseconds
-  const convertedTimestamp = date.toISOString().substr(11, 12);
-
-  return convertedTimestamp;
+  return timestamp.split(".")[0];
 }

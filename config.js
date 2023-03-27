@@ -31,8 +31,8 @@ async function getChatGptConfigObject() {
 function getYouTubeConfigObject() {
   return {
     // the number of allowed caption sentences with the format: timestamp|message
-    // usually 100 sentences ~= 2000+ TOKENS (MAX ALLOWED TOKENS BY CHATGPT ~= 4000)
-    CAPTIONS_SENTENCES_MAX_SIZE: 165,
+    CAPTIONS_SENTENCES_MAX_SIZE: 170,
+    DETAILED_CAPTION_TIMESTAMPS: false,
 
     YOUTUBE_API: {
       URL: "https://www.youtube.com/watch?v=",

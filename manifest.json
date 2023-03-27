@@ -6,7 +6,7 @@
 		"tabs",
 		"storage",
   		"activeTab",
-		"*://*.youtube.com//**"
+		"*://*.youtube.com//watch**"
 	],
 	"description": "a Google Chrome extension for YouTube that utilizes the captions and ChatGPT 3.5 to provide video assistance and information",
 	"version": "1.0",
@@ -16,7 +16,7 @@
 	"content_scripts": [
 		{
 			"matches": [
-				"*://*.youtube.com/*"
+				"*://*.youtube.com/watch*"
 			],
 			"css": [
 				"assets/content.css"

@@ -25,7 +25,7 @@ function formatChatGptAnswersBody(answers, config) {
     {
       role: "system",
       content:
-        "You are a helpful assistant. You will have some ChatGpt responses and you have to combine them in a single useful response. Don't mention you are combining them.",
+        "You are a helpful assistant. You will have some ChatGpt responses and you have to combine them in a single useful response.",
     },
   ];
 
@@ -43,7 +43,8 @@ function formatChatGptAnswersBody(answers, config) {
     ...messages,
     {
       role: "user",
-      content: "Provide an useful combined response.",
+      content:
+        "Provide an useful combined response. Don't mention you are combining them.",
     },
   ];
 
@@ -59,7 +60,7 @@ function formatChatGptCaptionBody(question, captionBucket, config) {
     {
       role: "system",
       content:
-        "You are a helpful assistant.You will get a few youtube captions in the format timestamp and message like 00:02:13.080|message.After that, a QUESTION will be provided.",
+        "You are a helpful assistant.You will get a few youtube captions in the format timestamp|message.After that,a QUESTION will be provided by the user.",
     },
   ];
 
@@ -82,7 +83,11 @@ function formatChatGptCaptionBody(question, captionBucket, config) {
     {
       role: "user",
       content:
-        "IMPORTANT:Answer the QUESTION including the timestamp if possible",
+        "IMPORTANT:Answer the QUESTION including the timestamp (if it's relevant) in the following format:",
+    },
+    {
+      role: "user",
+      content: "{TIMESTAMP:190}",
     },
   ];
 
