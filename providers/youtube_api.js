@@ -9,26 +9,30 @@ function getYoutubeVideoId() {
 
 async function getYoutubeVideoCaptionBuckets(videoId) {
   const config = getYouTubeConfigObject();
-  const captionsUrl = await getYoutubeCaptionVideoLink(videoId, config);
+  const { title, captionsUrl } = await getYoutubeCaptionVideoDetails(
+    videoId,
+    config
+  );
   const captions = await getYoutubeCaptionsByCaptionsUrl(captionsUrl, config);
 
   const captionBuckets = getCaptionBuckets(
     captions,
-    config.CAPTIONS_SENTENCES_MAX_SIZE
+    config.CAPTIONS_SENTENCES_MAX_SIZE,
+    `TITLE|:${title}`
   );
   return captionBuckets;
 }
 
-function getCaptionBuckets(captions, bucketSize) {
+function getCaptionBuckets(captions, bucketSize, title) {
   let buckets = [];
-  let currBucket = [];
+  let currBucket = [title];
   for (let i = 0; i < captions.length; i++) {
     let caption = `${captions[i].start}|${captions[i].message}`;
     let currBucketSize = currBucket.length;
 
     if (currBucketSize + 1 > bucketSize) {
       buckets = [...buckets, currBucket];
-      currBucket = [caption];
+      currBucket = [title, caption];
     } else {
       currBucket = [...currBucket, caption];
     }
@@ -40,7 +44,7 @@ function getCaptionBuckets(captions, bucketSize) {
   return buckets;
 }
 
-async function getYoutubeCaptionVideoLink(videoId, config) {
+async function getYoutubeCaptionVideoDetails(videoId, config) {
   const response = await fetch(`${config.YOUTUBE_API.URL}${videoId}`, {
     method: config.YOUTUBE_API.METHOD,
   });
@@ -54,8 +58,15 @@ async function getYoutubeCaptionVideoLink(videoId, config) {
     throw new Error("Caption link was NOT found.");
   }
 
-  const captionUrl = match[1].replace(/\\u0026/g, "&");
-  return captionUrl;
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+  const title = doc.title;
+
+  const captionsUrl = match[1].replace(/\\u0026/g, "&");
+  return {
+    title,
+    captionsUrl,
+  };
 }
 
 async function getYoutubeCaptionsByCaptionsUrl(captionsUrl, config) {

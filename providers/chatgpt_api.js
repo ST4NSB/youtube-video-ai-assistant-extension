@@ -80,7 +80,7 @@ function formatChatGptCaptionBody(question, captionBucket, config) {
     {
       role: "system",
       content:
-        "You are a helpful assistant.You will get a few youtube captions in the format timestamp|message.After that,a QUESTION will be provided by the user.",
+        "You are a helpful assistant.You will get a title and a few youtube captions in the format timestamp|message.After that,a QUESTION will be provided by the user.",
     },
   ];
 
