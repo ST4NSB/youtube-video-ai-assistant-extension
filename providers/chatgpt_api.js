@@ -90,6 +90,8 @@ function parseCaptionTimeStampToYoutubeVideoTimeStamp(timestamp) {
   if (convertedTimestamp.startsWith("00:")) {
     return convertedTimestamp.substring(3);
   }
+
+  return convertedTimestamp;
 }
 
 function formatChatGptAnswersBody(question, answers, config) {
