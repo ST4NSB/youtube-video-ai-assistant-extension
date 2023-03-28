@@ -70,7 +70,8 @@ async function getYoutubeCaptionVideoDetails(videoId, config) {
 }
 
 async function getYoutubeCaptionsByCaptionsUrl(captionsUrl, config) {
-  const response = await fetch(captionsUrl);
+  const url = changeUrlLanguageParamToEnglish(captionsUrl);
+  const response = await fetch(url);
   const xmlString = await response.text();
 
   const parser = new DOMParser();
@@ -93,6 +94,14 @@ async function getYoutubeCaptionsByCaptionsUrl(captionsUrl, config) {
   }
 
   return captions;
+}
+
+function changeUrlLanguageParamToEnglish(address) {
+  const url = new URL(address);
+  const params = new URLSearchParams(url.search);
+  params.set("lang", "en");
+  url.search = params.toString();
+  return url.toString();
 }
 
 function formatTimestamp(timestamp, allowDetailedTimestamps) {

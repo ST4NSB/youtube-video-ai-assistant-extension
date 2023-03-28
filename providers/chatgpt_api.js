@@ -18,7 +18,7 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
   }
 
   if (answers.length > 1) {
-    const answersBody = formatChatGptAnswersBody(answers, config);
+    const answersBody = formatChatGptAnswersBody(question, answers, config);
     const answer = await getChatGptResponse(answersBody, config);
     return await formatChatGptFinalResponse(videoId, answer);
   }
@@ -65,12 +65,16 @@ function parseCaptionTimeStampToYoutubeVideoTimeStamp(timestamp) {
   return convertedTimestamp;
 }
 
-function formatChatGptAnswersBody(answers, config) {
+function formatChatGptAnswersBody(question, answers, config) {
   let messages = [
     {
       role: "system",
       content:
-        "You are a helpful assistant. You will have some ChatGpt responses and you have to combine them in a single useful response.",
+        "You are a helpful assistant. You will have some ChatGpt responses and you have to combine them in a single useful response that will answer the user's question.",
+    },
+    {
+      role: "system",
+      content: "Do NOT mention you are combining the answers.",
     },
   ];
 
@@ -88,8 +92,7 @@ function formatChatGptAnswersBody(answers, config) {
     ...messages,
     {
       role: "user",
-      content:
-        "Provide an useful combined response. Don't mention you are combining them.",
+      content: `Provide an useful answer to this question: ${question}`,
     },
   ];
 

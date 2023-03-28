@@ -11,8 +11,10 @@ TODO:
 - include the title of the video to the initial requests (included in each separate request) - DONE
 - instead of reverse timestamp function, let the time with milliseconds (for performance) and include a text for chatgpt to say smth like: {TIMESTAMP:153} - DONE
 - ^ preprocess the above timestamp from the chatgpt response to a anchor link - DONE
+- disable text input and button on waiting for chatgpt response - DONE
+- change language from cn to en in captions request - DONE
 
-- disable text input and button on waiting for chatgpt response
+- save the videoId with the chatgpt answer, when you come back to the video, you will have the chatgpt previous answer
 
 - move these TODO in issues
 - implement 2nd mode for chatgpt
