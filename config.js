@@ -30,7 +30,9 @@ async function getChatGptConfigObject() {
       METHOD: "POST",
     },
 
-    TIMESTAMP_EXTRACT_REGEX: /[tT]imestamp\s(\d+)/g,
+    TIMESTAMP_EXTRACT_REGEX: /\[(\d+)\]/g,
+    TIMESTAMPARRAY_EXTRACT_REGEX: /\[(\d+(?:,\s*\d+)*)\]/g,
+    TIMESTAMPRANGE_EXTRACT_REGEX: /(\d+)-(\d+)/g,
     ...(await getEnvironmentVariables()),
   };
 }

@@ -14,6 +14,7 @@ TODO:
 - disable text input and button on waiting for chatgpt response - DONE
 - change language from cn to en in captions request - DONE
 
+- request chatgpt to return timestamp in the format T-123 - DONE
 - save the videoId with the chatgpt answer, when you come back to the video, you will have the chatgpt previous answer
 
 - move these TODO in issues

@@ -30,23 +30,45 @@ async function formatChatGptFinalResponse(videoId, response) {
   const chatGptConfig = await getChatGptConfigObject();
   const youtubeConfig = getYouTubeConfigObject();
 
+  const anchorTag = (number) =>
+    `<a href="${
+      youtubeConfig.YOUTUBE_API.URL
+    }${videoId}&t=${number}">${parseCaptionTimeStampToYoutubeVideoTimeStamp(
+      number
+    )}</a>`;
+
+  let formattedResponse = response.replace(/\n/g, "<br>");
+
   const timestampRegex = new RegExp(chatGptConfig.TIMESTAMP_EXTRACT_REGEX);
   const matches = response.matchAll(timestampRegex);
 
-  let formattedResponse = response;
   for (const match of matches) {
     const timestamp = match[1];
     formattedResponse = formattedResponse.replace(
       match[0],
-      `<a href="${
-        youtubeConfig.YOUTUBE_API.URL
-      }${videoId}&t=${timestamp}">${parseCaptionTimeStampToYoutubeVideoTimeStamp(
-        timestamp
-      )}</a>`
+      anchorTag(timestamp)
     );
   }
 
-  formattedResponse = formattedResponse.replace("\n", "<br>");
+  const arrTimestampsRegex = new RegExp(
+    chatGptConfig.TIMESTAMPARRAY_EXTRACT_REGEX
+  );
+  formattedResponse = formattedResponse.replace(
+    arrTimestampsRegex,
+    (match, capture) => {
+      const numbers = capture.split(/\s*,\s*/); // split the captured string into an array of numbers
+      const anchors = numbers.map((number) => anchorTag(number)); // create an array of anchor tags for each number
+      return `[${anchors.join(", ")}]`; // join the anchor tags with commas and return the final string inside square brackets
+    }
+  );
+
+  formattedResponse = formattedResponse.replace(
+    chatGptConfig.TIMESTAMPRANGE_EXTRACT_REGEX,
+    (match, start, end) => {
+      return `${anchorTag(start)}-${anchorTag(end)}`;
+    }
+  );
+
   return formattedResponse;
 }
 
@@ -60,9 +82,14 @@ function parseCaptionTimeStampToYoutubeVideoTimeStamp(timestamp) {
 
   // Convert the absolute start time to the video timestamp format
   const date = new Date(absoluteStart * 1000); // Convert to milliseconds
-  const convertedTimestamp = date.toISOString().substr(11, 12);
+  const convertedTimestamp = date
+    .toISOString()
+    .substr(11, 12)
+    .replace(".000", "");
 
-  return convertedTimestamp;
+  if (convertedTimestamp.startsWith("00:")) {
+    return convertedTimestamp.substring(3);
+  }
 }
 
 function formatChatGptAnswersBody(question, answers, config) {
@@ -127,17 +154,12 @@ function formatChatGptCaptionBody(question, captionBucket, config) {
     {
       role: "system",
       content:
-        "IMPORTANT 1:Answer the QUESTION including the timestamp, only if it's relevant, in the following format: timestamp 20",
+        "IMPORTANT:Answer the QUESTION including the timestamp, only if it's relevant.",
     },
     {
       role: "system",
       content:
-        "IMPORTANT 2:DO NOT include a list of timestamps,ALWAYS use individual timestamps",
-    },
-    {
-      role: "system",
-      content:
-        "IMPORTANT 3:you can include end timestamps, but do NOT add hypen or dashes in the answer",
+        "IMPORTANT:Any timestamp provided should be included in square brackets like: [10]",
     },
     {
       role: "user",
