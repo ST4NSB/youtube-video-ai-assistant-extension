@@ -17,9 +17,9 @@ function getMainConfig() {
 
 async function getChatGptConfigObject() {
   return {
-    CHATGPT_MODEL: "gpt-3.5-turbo",
-    CHATGPT_TEMPERATURE: 0.62,
     CHATGPT_MODE: 1, // 1 - CHATGPT_CHAT_URL, 2 - CHATGPT_PROMPT_URL
+    CHATGPT_MODEL: "gpt-3.5-turbo", // 1 - "gpt-3.5-turbo", 2 - "text-davinci-003"
+    CHATGPT_TEMPERATURE: 0.75,
 
     CHATGPT_CHAT_API: {
       URL: "https://api.openai.com/v1/chat/completions",

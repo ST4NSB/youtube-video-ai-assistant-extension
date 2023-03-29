@@ -18,7 +18,7 @@ async function getYoutubeVideoCaptionBuckets(videoId) {
   const captionBuckets = getCaptionBuckets(
     captions,
     config.CAPTIONS_SENTENCES_MAX_SIZE,
-    `TITLE|:${title}`
+    `TITLE|${title}`
   );
   return captionBuckets;
 }

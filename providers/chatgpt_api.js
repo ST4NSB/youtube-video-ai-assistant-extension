@@ -1,16 +1,63 @@
+const preCaptionContent = [
+  {
+    role: "system",
+    content:
+      "You are a helpful assistant.You will get a title and a few youtube captions in the format timestamp|message.After that,a QUESTION will be provided by the user.",
+  },
+];
+
+const postCaptionContent = (question) => [
+  {
+    role: "system",
+    content:
+      "IMPORTANT:Answer the QUESTION including the timestamp, only if it's relevant.",
+  },
+  {
+    role: "system",
+    content:
+      "IMPORTANT:Any timestamp provided should be included in square brackets like: [10].",
+  },
+  {
+    role: "user",
+    content: `QUESTION:${question}`,
+  },
+];
+
+const preAnswersContent = [
+  {
+    role: "system",
+    content:
+      "You are a helpful assistant. You will have some ChatGpt responses and you have to combine them in a single useful response that will answer the user's question.",
+  },
+  {
+    role: "system",
+    content: "Do NOT mention you are combining the answers.",
+  },
+];
+
+const postAnswersContent = (question) => [
+  {
+    role: "user",
+    content: `Provide an useful answer to this question: ${question}`,
+  },
+];
+
+// --------------------------------------------------------------------
+
 async function getChatGptAnswer(videoId, question, captionBuckets) {
-  const config = await getChatGptConfigObject();
-  const mainConfig = getMainConfig();
+  const config = getMainConfig();
+
   let answers = [];
   for (let i = 0; i < captionBuckets.length; i++) {
-    const bodyMessage = formatChatGptCaptionBody(
+    const requestBody = await createChatGptRequestBody(
       question,
+      preCaptionContent,
       captionBuckets[i],
-      config
+      postCaptionContent
     );
 
-    const response = await getChatGptResponse(bodyMessage, config);
-    if (mainConfig.DEBUG) {
+    const response = await getChatGptResponse(requestBody);
+    if (config.DEBUG) {
       console.log(`Unfiltered ChatGPT Response-Nr ${i}: ${response}`);
     }
 
@@ -18,8 +65,15 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
   }
 
   if (answers.length > 1) {
-    const answersBody = formatChatGptAnswersBody(question, answers, config);
-    const answer = await getChatGptResponse(answersBody, config);
+    const answersRequestBody = await createChatGptRequestBody(
+      question,
+      preAnswersContent,
+      answers.map(
+        (answer, i) => `Chat-GPT response number ${i + 1}: ${answer}`
+      ),
+      postAnswersContent
+    );
+    const answer = await getChatGptResponse(answersRequestBody);
     return await formatChatGptFinalResponse(videoId, answer);
   }
 
@@ -28,12 +82,10 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
 
 async function formatChatGptFinalResponse(videoId, response) {
   const chatGptConfig = await getChatGptConfigObject();
-  const youtubeConfig = getYouTubeConfigObject();
+  const youTubeVideoUrl = getYouTubeConfigObject().YOUTUBE_API.URL;
 
   const anchorTag = (number) =>
-    `<a href="${
-      youtubeConfig.YOUTUBE_API.URL
-    }${videoId}&t=${number}">${parseCaptionTimeStampToYoutubeVideoTimeStamp(
+    `<a href="${youTubeVideoUrl}${videoId}&t=${number}">${parseCaptionTimeStampToYoutubeVideoTimeStamp(
       number
     )}</a>`;
 
@@ -94,91 +146,62 @@ function parseCaptionTimeStampToYoutubeVideoTimeStamp(timestamp) {
   return convertedTimestamp;
 }
 
-function formatChatGptAnswersBody(question, answers, config) {
-  let messages = [
-    {
-      role: "system",
-      content:
-        "You are a helpful assistant. You will have some ChatGpt responses and you have to combine them in a single useful response that will answer the user's question.",
-    },
-    {
-      role: "system",
-      content: "Do NOT mention you are combining the answers.",
-    },
-  ];
+async function createChatGptRequestBody(
+  question,
+  preContentArray,
+  contentArray,
+  postContentArray
+) {
+  const config = await getChatGptConfigObject();
 
-  for (let i = 0; i < answers.length; i++) {
-    let answer = answers[i];
-    messages = [
-      ...messages,
-      {
-        role: "system",
-        content: `Chat-GPT response number ${i + 1}: ${answer}`,
-      },
-    ];
-  }
-  messages = [
-    ...messages,
-    {
-      role: "user",
-      content: `Provide an useful answer to this question: ${question}`,
-    },
-  ];
-
-  return {
-    model: config.CHATGPT_MODEL,
-    messages: messages,
-    temperature: config.CHATGPT_TEMPERATURE,
-  };
-}
-
-function formatChatGptCaptionBody(question, captionBucket, config) {
-  let messages = [
-    {
-      role: "system",
-      content:
-        "You are a helpful assistant.You will get a title and a few youtube captions in the format timestamp|message.After that,a QUESTION will be provided by the user.",
-    },
-  ];
-
-  for (let i = 0; i < captionBucket.length; i++) {
-    let caption = captionBucket[i];
-    messages = [
-      ...messages,
-      {
-        role: "system",
-        content: caption,
-      },
-    ];
-  }
-  messages = [
-    ...messages,
-    {
-      role: "system",
-      content:
-        "IMPORTANT:Answer the QUESTION including the timestamp, only if it's relevant.",
-    },
-    {
-      role: "system",
-      content:
-        "IMPORTANT:Any timestamp provided should be included in square brackets like: [10]",
-    },
-    {
-      role: "user",
-      content: `QUESTION:${question}`,
-    },
-  ];
-
-  return {
-    model: config.CHATGPT_MODEL,
-    messages: messages,
-    temperature: config.CHATGPT_TEMPERATURE,
-  };
-}
-
-async function getChatGptResponse(body, config) {
   if (config.CHATGPT_MODE === 1) {
-    const response = await getFetchResponse(
+    let messages = [...preContentArray];
+
+    for (let i = 0; i < contentArray.length; i++) {
+      let content = contentArray[i];
+      messages = [
+        ...messages,
+        {
+          role: "system",
+          content: content,
+        },
+      ];
+    }
+
+    messages = [...messages, ...postContentArray(question)];
+
+    return {
+      model: config.CHATGPT_MODEL,
+      messages: messages,
+      temperature: config.CHATGPT_TEMPERATURE,
+    };
+  } else if (config.CHATGPT_MODE === 2) {
+    let prompt = preContentArray.map((msg) => msg.content).join("");
+
+    for (let i = 0; i < contentArray.length; i++) {
+      let caption = contentArray[i];
+      prompt += `${caption}.`;
+    }
+
+    prompt += postContentArray(question)
+      .map((msg) => msg.content)
+      .join("");
+
+    return {
+      model: config.CHATGPT_MODEL,
+      prompt: prompt,
+      temperature: config.CHATGPT_TEMPERATURE,
+    };
+  }
+
+  throw new Error("Unsupported ChatGPT Mode.");
+}
+
+async function getChatGptResponse(body) {
+  const config = await getChatGptConfigObject();
+
+  if (config.CHATGPT_MODE === 1) {
+    const response = await getHttpResponse(
       config.CHATGPT_CHAT_API.URL,
       config.CHATGPT_CHAT_API.METHOD,
       body,
@@ -186,13 +209,19 @@ async function getChatGptResponse(body, config) {
     );
     return response.choices[0].message.content;
   } else if (config.CHATGPT_MODE === 2) {
-    throw new Error("Unsupported ChatGPT Mode.");
+    const response = await getHttpResponse(
+      config.CHATGPT_PROMPT_API.URL,
+      config.CHATGPT_PROMPT_API.METHOD,
+      body,
+      config.CHATGPT_KEY
+    );
+    return response.choices[0].text;
   }
 
-  return null;
+  throw new Error("Unsupported ChatGPT Mode.");
 }
 
-async function getFetchResponse(url, method, body, token) {
+async function getHttpResponse(url, method, body, token) {
   const response = await fetch(url, {
     method: method,
     headers: {
