@@ -25,7 +25,7 @@ function renderChatBox() {
 
   const historyMenu = document.createElement("div");
   historyMenu.id = "menu-history";
-  historyMenu.innerHTML = "ChatGPT Question History - Click to toggle";
+  historyMenu.innerHTML = "ChatGPT History - Click to toggle";
 
   const historyDelete = document.createElement("button");
   historyDelete.id = "delete-history";
