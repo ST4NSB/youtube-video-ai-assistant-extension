@@ -61,7 +61,7 @@ async function askChatGPT(videoId, captions) {
       console.log("ChatGPT response:", response);
     }
   } catch (err) {
-    const msg = `Error: ${err} in YouTube captions AI assistant, id: send-to-chat - Event Listener.`;
+    const msg = `Error: ${err} - YouTube Video - AI assistant, id: send-to-chat - Event Listener.`;
     console.error(msg);
     alert(msg);
   }

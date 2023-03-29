@@ -1,6 +1,6 @@
 {
 	"manifest_version": 2,
-	"name": "YouTube captions AI assistant",
+	"name": "YouTube Video - AI Assistant",
 	"author": "ST4NSB",
 	"permissions": [
 		"tabs",
@@ -23,9 +23,9 @@
 			],
 			"js": [
 				"config.js",
+				"providers/storage_api.js",
 				"providers/youtube_api.js",
 				"providers/chatgpt_api.js",
-				"providers/storage_api.js",
 				"components/chatbox.js",
 				"events/chatgpt_events.js",
 				"main_page.js"

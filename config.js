@@ -21,6 +21,8 @@ async function getChatGptConfigObject() {
     CHATGPT_MODEL: "gpt-3.5-turbo", // 1 - "gpt-3.5-turbo", 2 - "text-davinci-003"
     CHATGPT_TEMPERATURE: 0.75,
 
+    PREVIOUS_CONTEXT_LIMIT: 1,
+
     CHATGPT_CHAT_API: {
       URL: "https://api.openai.com/v1/chat/completions",
       METHOD: "POST",

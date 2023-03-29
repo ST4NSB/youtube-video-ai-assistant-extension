@@ -4,9 +4,14 @@ const preCaptionContent = [
     content:
       "You are a helpful assistant.You will get a title and a few youtube captions in the format timestamp|message.After that,a QUESTION will be provided by the user.",
   },
+  {
+    role: "system",
+    content:
+      "In some cases, some PREVIOUS QUESTION & ANSWER will be provided by the user, use them if necessary to get more context about the current QUESTION.",
+  },
 ];
 
-const postCaptionContent = (question) => [
+const postCaptionContent = async (videoId, question) => [
   {
     role: "system",
     content:
@@ -17,6 +22,7 @@ const postCaptionContent = (question) => [
     content:
       "IMPORTANT:Any timestamp provided should be included in square brackets like: [10].",
   },
+  ...(await loadPreviousContext(videoId, "system")),
   {
     role: "user",
     content: `QUESTION:${question}`,
@@ -31,11 +37,17 @@ const preAnswersContent = [
   },
   {
     role: "system",
+    content:
+      "In some cases, some PREVIOUS QUESTION & ANSWER will be provided by the user, use them if necessary to get more context about the current QUESTION.",
+  },
+  {
+    role: "system",
     content: "Do NOT mention you are combining the answers.",
   },
 ];
 
-const postAnswersContent = (question) => [
+const postAnswersContent = async (videoId, question) => [
+  ...(await loadPreviousContext(videoId, "system")),
   {
     role: "user",
     content: `Provide an useful answer to this question: ${question}`,
@@ -50,6 +62,7 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
   let answers = [];
   for (let i = 0; i < captionBuckets.length; i++) {
     const requestBody = await createChatGptRequestBody(
+      videoId,
       question,
       preCaptionContent,
       captionBuckets[i],
@@ -66,6 +79,7 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
 
   if (answers.length > 1) {
     const answersRequestBody = await createChatGptRequestBody(
+      videoId,
       question,
       preAnswersContent,
       answers.map(
@@ -146,6 +160,7 @@ function parseCaptionTimeStampToYoutubeVideoTimeStamp(timestamp) {
 }
 
 async function createChatGptRequestBody(
+  videoId,
   question,
   preContentArray,
   contentArray,
@@ -167,7 +182,7 @@ async function createChatGptRequestBody(
       ];
     }
 
-    messages = [...messages, ...postContentArray(question)];
+    messages = [...messages, ...(await postContentArray(videoId, question))];
 
     return {
       model: config.CHATGPT_MODEL,
@@ -182,7 +197,7 @@ async function createChatGptRequestBody(
       prompt += `${caption}.`;
     }
 
-    prompt += postContentArray(question)
+    prompt += await postContentArray(videoId, question)
       .map((msg) => msg.content)
       .join("");
 
@@ -232,4 +247,23 @@ async function getHttpResponse(url, method, body, token) {
 
   const data = await response.json();
   return data;
+}
+
+async function loadPreviousContext(videoId, role) {
+  const config = await getChatGptConfigObject();
+  const messageHistory = await getChatGPTMessageHistory();
+  const questions = [...(messageHistory[videoId] || [])].reverse();
+  const filteredQuestions = questions.filter(
+    (pair, i) => i < config.PREVIOUS_CONTEXT_LIMIT
+  );
+
+  if (filteredQuestions.length === 0) return [];
+  const results = filteredQuestions
+    .map((pair) => ({
+      role: role,
+      content: `PREVIOUS QUESTION:${pair.question},PREVIOUS ANSWER:${pair.answer}.`,
+    }))
+    .reverse();
+
+  return results;
 }
