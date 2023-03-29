@@ -1,45 +1,43 @@
 let rendered = false;
 let oldPageUrl = "";
 
-function createMutationObserver(config) {
+function createMutationObserver() {
   const observer = new MutationObserver(async (mutationsList, observer) => {
-    const currentPageUrl = window.location.href;
-    if (oldPageUrl !== currentPageUrl || !rendered) {
-      if (oldPageUrl !== currentPageUrl) {
-        oldPageUrl = currentPageUrl;
-        rendered = false;
-      }
+    try {
+      const currentPageUrl = window.location.href;
+      if (oldPageUrl !== currentPageUrl || !rendered) {
+        if (oldPageUrl !== currentPageUrl) {
+          oldPageUrl = currentPageUrl;
+          rendered = false;
+        }
 
-      if (!rendered) {
-        const youtubeComponent = document.getElementById("above-the-fold");
-        if (document.contains(youtubeComponent)) {
-          rendered = true;
+        if (!rendered) {
+          const config = getMainConfig();
+          const youtubeComponent = document.getElementById("above-the-fold");
+          if (document.contains(youtubeComponent)) {
+            rendered = true;
 
-          renderChatBox();
-          const videoId = getYoutubeVideoId();
-          if (videoId === null) {
-            throw new Error("Couldn't fetch videoId.");
-          }
-
-          const captions = await getYoutubeVideoCaptionBuckets(videoId);
-          if (config.DEBUG) {
-            console.log("YouTube-VideoID:", videoId);
-            console.log("YouTube-Captions:", captions);
-          }
-
-          const button = document.getElementById("send-to-chat");
-          button.addEventListener("click", async () => {
-            renderEventListener(videoId, captions, config);
-          });
-
-          const textInput = document.getElementById("input-text");
-          textInput.addEventListener("keypress", async () => {
-            if (event.keyCode === 13) {
-              renderEventListener(videoId, captions, config);
+            const videoId = getYoutubeVideoId();
+            if (videoId === null) {
+              throw new Error("Couldn't fetch videoId.");
             }
-          });
+
+            renderChatBox();
+            createChatConversation(await getAllQuestionPairs(videoId));
+            const captions = await getYoutubeVideoCaptionBuckets(videoId);
+            if (config.DEBUG) {
+              console.log("YouTube-VideoID:", videoId);
+              console.log("YouTube-Captions:", captions);
+            }
+
+            renderChatGptEventListeners(videoId, captions);
+          }
         }
       }
+    } catch (err) {
+      const msg = `Error: ${err}. - YouTube video AI assistant, main_page.js, mutationObserver.`;
+      console.error(msg);
+      alert(msg);
     }
   });
 
@@ -51,48 +49,6 @@ function createMutationObserver(config) {
   observer.observe(document.documentElement, observerConfig);
 }
 
-async function renderEventListener(videoId, captions, config) {
-  try {
-    const question = document.getElementById("input-text").value;
-
-    if (!question) {
-      return;
-    }
-
-    const textInput = document.getElementById("input-text");
-    const sendButton = document.getElementById("send-to-chat");
-    const chatBotMessageBox = document.getElementById("chat-response");
-    textInput.disabled = true;
-    sendButton.disabled = true;
-    chatBotMessageBox.innerHTML = "Loading ChatGPT answer ..";
-
-    const response = await getChatGptAnswer(videoId, question, captions);
-
-    textInput.disabled = false;
-    sendButton.disabled = false;
-    chatBotMessageBox.innerHTML = response;
-
-    if (config.DEBUG) {
-      console.log("ChatGPT response:", response);
-    }
-  } catch (err) {
-    const msg = `Error: ${err} in YouTube captions AI assistant, id: send-to-chat - Event Listener.`;
-    console.error(msg);
-    alert(msg);
-  }
-}
-
-async function main() {
-  try {
-    const config = getMainConfig();
-    createMutationObserver(config);
-  } catch (err) {
-    const msg = `Error: ${err} in YouTube captions AI assistant, main_page.js.`;
-    console.error(msg);
-    alert(msg);
-  }
-}
-
 window.onload = function () {
-  main();
+  createMutationObserver();
 };

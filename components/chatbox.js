@@ -14,7 +14,7 @@ function renderChatBox() {
   button.id = "send-to-chat";
 
   const response = document.createElement("div");
-  response.innerHTML = "ChatGPT will answer all your questions";
+  response.innerHTML = "ChatGPT will answer your question";
   response.id = "chat-response";
   response.readOnly = true;
 
@@ -23,11 +23,58 @@ function renderChatBox() {
   textContainer.appendChild(input);
   textContainer.appendChild(button);
 
+  const historyMenu = document.createElement("div");
+  historyMenu.id = "menu-history";
+  historyMenu.innerHTML = "ChatGPT Question History - Click to toggle";
+
+  const historyDelete = document.createElement("button");
+  historyDelete.id = "delete-history";
+  historyDelete.innerHTML = "DELETE";
+  historyDelete.title = "Delete all ChatGPT message history.";
+
+  const historyBar = document.createElement("div");
+  historyBar.id = "history-bar";
+  historyBar.appendChild(historyMenu);
+  historyBar.appendChild(historyDelete);
+
+  const historyQuestions = document.createElement("div");
+  historyQuestions.id = "questions-history";
+  historyQuestions.classList.add("hidden-component");
+
+  const historyContainer = document.createElement("div");
+  historyContainer.id = "chat-history";
+  historyContainer.appendChild(historyBar);
+  historyContainer.appendChild(historyQuestions);
+
   const mainContainer = document.createElement("div");
   mainContainer.id = "chat-box";
   mainContainer.appendChild(textContainer);
   mainContainer.appendChild(response);
+  mainContainer.appendChild(historyContainer);
 
   const youtubeComponent = document.getElementById("above-the-fold");
   youtubeComponent.appendChild(mainContainer);
+}
+
+function createChatConversation(messageHistory) {
+  const conversationFormat = (question, answer) =>
+    `<div class="qpair">
+      <div class="question">
+        <span class="user">YOU:</span>
+        <span>${question}</span>
+      </div>
+      <div class="answer">
+        <span class="chatgpt">CHATGPT:</span>
+        <span>${answer}</span>
+      </div>
+    </div>`;
+
+  let conversation = "";
+  for (let i = 0; i < messageHistory.length; i++) {
+    let message = messageHistory[i];
+    conversation += conversationFormat(message.question, message.answer);
+  }
+
+  const chatHistory = document.getElementById("questions-history");
+  chatHistory.insertAdjacentHTML("afterbegin", conversation);
 }

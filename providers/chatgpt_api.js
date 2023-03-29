@@ -125,12 +125,11 @@ async function formatChatGptFinalResponse(videoId, response) {
 }
 
 function parseCaptionTimeStampToYoutubeVideoTimeStamp(timestamp) {
-  timestamp = timestamp + ".00";
   // Video start time (in seconds)
   const videoStart = 0;
 
   // Calculate the absolute start time (in seconds)
-  const absoluteStart = timestamp + videoStart;
+  const absoluteStart = timestamp + ".000" + videoStart;
 
   // Convert the absolute start time to the video timestamp format
   const date = new Date(absoluteStart * 1000); // Convert to milliseconds

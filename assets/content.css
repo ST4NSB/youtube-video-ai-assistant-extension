@@ -6,13 +6,13 @@
     padding: 10px;
 }
 
-#text-box {
+#text-box, #history-bar {
     display: flex;
     /* align-items: center; */
     justify-content: center;
 }
 
-#input-text {
+#input-text, #menu-history {
     width: 100%;
     height: 23px;
     background-color: #3c3b3b;
@@ -25,7 +25,7 @@
     font-weight: bold;
 }
 
-#send-to-chat {
+#send-to-chat, #delete-history {
     background-color: #464545;
     color: #ffffff;
     font-size: 15px;
@@ -38,7 +38,12 @@
     font-weight: bold;
 }
 
-#send-to-chat:hover {
+#delete-history {
+    margin-top: 10px;
+    padding: 9px;
+}
+
+#send-to-chat:hover, #delete-history:hover {
     background-color: #3a3a3a;
 }
 
@@ -48,17 +53,43 @@
     background-color: #3a3a3a;
 }
 
-#chat-response {
+#chat-response, #questions-history .qpair {
     font-size: 17px;
     background-color: #181818;
     color: white;
-    border-radius: 10px;
     padding: 15px;
     margin-top: 10px;
     border-radius: 4px;
 }
 
-#chat-response a, #chat-response a:-webkit-any-link {
+#chat-response a, #chat-response a:-webkit-any-link, 
+#questions-history .qpair .answer a, 
+#questions-history .qpair .answer a:-webkit-any-link {
     color: #368AD3;
     text-decoration: none;
+}
+
+#menu-history {
+    font-size: 16px;
+    margin-top: 10px;
+    padding: 7px;
+    padding-left: 10px;
+    background-color: #343434;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.hidden-component {
+    display: none;
+}
+
+#questions-history .qpair .question {
+    margin-bottom: 3px;
+
+}
+
+#questions-history .qpair .user, #questions-history .qpair .chatgpt {
+    margin-right: 3px;
+    font-weight: bold;
+    color: #8d69e7;
 }
