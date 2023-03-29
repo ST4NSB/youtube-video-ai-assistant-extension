@@ -41,7 +41,7 @@ async function getChatGptConfigObject() {
 function getYouTubeConfigObject() {
   return {
     // the number of allowed caption sentences with the format: timestamp|message
-    CAPTIONS_SENTENCES_MAX_SIZE: 200,
+    CAPTIONS_SENTENCES_MAX_SIZE: 220,
     DETAILED_CAPTION_TIMESTAMPS: false,
 
     YOUTUBE_API: {

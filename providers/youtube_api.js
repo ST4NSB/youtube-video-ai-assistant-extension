@@ -119,5 +119,7 @@ function removeSpecialCharactersAndTags(message) {
   return message
     .replace(regex, " ")
     .replace(htmlEntityRegex, "")
-    .replace(htmlTagRegex, "");
+    .replace(htmlTagRegex, "")
+    .replace(/’/g, "")
+    .replace(/‘/g, "");
 }

@@ -33,7 +33,7 @@ const preAnswersContent = [
   {
     role: "system",
     content:
-      "You are a helpful assistant. You will have some Chat-GPT responses and you have to combine them in a single useful response that will answer the user's QUESTION.",
+      "You are a helpful assistant. You will have some Computed Results and you have to combine them in a single useful response that will answer the user's QUESTION.",
   },
   {
     role: "system",
@@ -51,7 +51,7 @@ const postAnswersContent = async (videoId, question) => [
   {
     role: "system",
     content:
-      "IMPORTANT:Answer the QUESTION including the timestamp, ONLY if it's relevant.",
+      "IMPORTANT:Answer the QUESTION including the timestamp, ONLY if it's relevant, in the format: [timestamp]",
   },
   ...(await loadPreviousContext(videoId, "system")),
   {
@@ -80,6 +80,13 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
       console.log(`UNEDITED ChatGPT ResponseNr ${i}: ${response}`);
     }
 
+    if (captionBuckets.length > 1) {
+      let chatBotMessageBox = document.getElementById("chat-response");
+      chatBotMessageBox.innerHTML = `Loading ChatGPT answers ... Loaded [${
+        i + 1
+      }/${captionBuckets.length + 1}]`;
+    }
+
     answers = [...answers, response];
   }
 
@@ -88,13 +95,15 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
       videoId,
       question,
       preAnswersContent,
-      answers.map((answer, i) => `Chat-GPT response #${i + 1}: ${answer}`),
+      answers.map((answer, i) => `Computed Result #${i + 1}: ${answer}`),
       postAnswersContent
     );
     const answer = await getChatGptResponse(answersRequestBody);
+    await saveQuestionPair(videoId, question, answer);
     return await formatChatGptFinalResponse(videoId, answer);
   }
 
+  await saveQuestionPair(videoId, question, answers[0]);
   return await formatChatGptFinalResponse(videoId, answers[0]);
 }
 

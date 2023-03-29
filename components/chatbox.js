@@ -55,8 +55,8 @@ function renderChatBox() {
   youtubeComponent.appendChild(mainContainer);
 }
 
-function createChatConversation(messageHistory) {
-  const conversationFormat = (question, answer) =>
+async function createChatConversation(videoId, messageHistory) {
+  const conversationFormat = async (question, answer) =>
     `<div class="qpair">
       <div class="question">
         <span class="user">YOU:</span>
@@ -64,14 +64,14 @@ function createChatConversation(messageHistory) {
       </div>
       <div class="answer">
         <span class="chatgpt">CHATGPT:</span>
-        <span>${answer}</span>
+        <span>${await formatChatGptFinalResponse(videoId, answer)}</span>
       </div>
     </div>`;
 
   let conversation = "";
   for (let i = 0; i < messageHistory.length; i++) {
     let message = messageHistory[i];
-    conversation += conversationFormat(message.question, message.answer);
+    conversation += await conversationFormat(message.question, message.answer);
   }
 
   const chatHistory = document.getElementById("questions-history");

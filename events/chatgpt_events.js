@@ -44,13 +44,12 @@ async function askChatGPT(videoId, captions) {
     chatBotMessageBox.innerHTML = "Loading ChatGPT answer ...";
 
     const response = await getChatGptAnswer(videoId, question, captions);
-    await saveQuestionPair(videoId, question, response);
 
     textInput.disabled = false;
     sendButton.disabled = false;
     chatBotMessageBox.innerHTML = response;
 
-    createChatConversation([
+    await createChatConversation(videoId, [
       {
         question: question,
         answer: response,

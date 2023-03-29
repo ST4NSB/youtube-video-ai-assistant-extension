@@ -93,3 +93,7 @@
     font-weight: bold;
     color: #8d69e7;
 }
+
+#questions-history .qpair .user {
+    color: gray;
+}

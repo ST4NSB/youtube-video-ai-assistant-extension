@@ -35,7 +35,10 @@ function createMutationObserver() {
             }
 
             renderChatBox();
-            createChatConversation(await getAllQuestionPairs(videoId));
+            await createChatConversation(
+              videoId,
+              await getAllQuestionPairs(videoId)
+            );
             renderChatGptEventListeners(videoId, captions);
           }
         }
