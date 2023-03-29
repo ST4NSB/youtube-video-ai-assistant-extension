@@ -39,7 +39,6 @@ function renderChatBox() {
 
   const historyQuestions = document.createElement("div");
   historyQuestions.id = "questions-history";
-  historyQuestions.classList.add("hidden-component");
 
   const historyContainer = document.createElement("div");
   historyContainer.id = "chat-history";

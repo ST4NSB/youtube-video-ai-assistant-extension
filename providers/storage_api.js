@@ -10,6 +10,10 @@ async function getChatGPTMessageHistory() {
   });
 }
 
+async function deleteAllChatGPTMessageHistory() {
+  chrome.storage.local.remove("ChatGPTMessageHistory", function () {});
+}
+
 async function getAllQuestionPairs(videoId) {
   const messageHistory = await getChatGPTMessageHistory();
   const reversedArray = [...(messageHistory[videoId] || [])].reverse();

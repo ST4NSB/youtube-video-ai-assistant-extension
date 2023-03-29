@@ -88,7 +88,7 @@ async function getYoutubeCaptionsByCaptionsUrl(captionsUrl, config) {
     let caption = {
       start: formatTimestamp(start, config.DETAILED_CAPTION_TIMESTAMPS),
       duration: formatTimestamp(duration, config.DETAILED_CAPTION_TIMESTAMPS),
-      message,
+      message: removeSpecialCharactersAndTags(message),
     };
     captions = [...captions, caption];
   }
@@ -110,4 +110,14 @@ function formatTimestamp(timestamp, allowDetailedTimestamps) {
   }
 
   return timestamp.split(".")[0];
+}
+
+function removeSpecialCharactersAndTags(message) {
+  const regex = /[\n\t\r\\]/g;
+  const htmlEntityRegex = /&#[0-9]+;/g;
+  const htmlTagRegex = /<\/?[a-zA-Z0-9]+[^>]*>/g;
+  return message
+    .replace(regex, " ")
+    .replace(htmlEntityRegex, "")
+    .replace(htmlTagRegex, "");
 }

@@ -19,17 +19,23 @@ function createMutationObserver() {
 
             const videoId = getYoutubeVideoId();
             if (videoId === null) {
-              throw new Error("Couldn't fetch videoId.");
+              console.error(
+                "Couldn't fetch videoId. - YouTube video AI assistant"
+              );
+              return;
             }
 
-            renderChatBox();
-            createChatConversation(await getAllQuestionPairs(videoId));
             const captions = await getYoutubeVideoCaptionBuckets(videoId);
             if (config.DEBUG) {
               console.log("YouTube-VideoID:", videoId);
               console.log("YouTube-Captions:", captions);
             }
+            if (captions.length === 0) {
+              throw new Error("Couldn't fetch the CAPTIONS of this video!");
+            }
 
+            renderChatBox();
+            createChatConversation(await getAllQuestionPairs(videoId));
             renderChatGptEventListeners(videoId, captions);
           }
         }

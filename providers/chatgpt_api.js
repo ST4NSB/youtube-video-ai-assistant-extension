@@ -20,7 +20,7 @@ const postCaptionContent = async (videoId, question) => [
   {
     role: "system",
     content:
-      "IMPORTANT:Any timestamp provided should be included in square brackets like: [10].",
+      "IMPORTANT:Any timestamp provided should be included in square brackets like: [480].",
   },
   ...(await loadPreviousContext(videoId, "system")),
   {
@@ -33,24 +33,30 @@ const preAnswersContent = [
   {
     role: "system",
     content:
-      "You are a helpful assistant. You will have some ChatGpt responses and you have to combine them in a single useful response that will answer the user's question.",
+      "You are a helpful assistant. You will have some Chat-GPT responses and you have to combine them in a single useful response that will answer the user's QUESTION.",
+  },
+  {
+    role: "system",
+    content:
+      "do NOT mention you are combining Chat-GPT answers/responses, just take the content and create an useful final response.",
   },
   {
     role: "system",
     content:
       "In some cases, some PREVIOUS QUESTION & ANSWER will be provided by the user, use them if necessary to get more context about the current QUESTION.",
   },
-  {
-    role: "system",
-    content: "Do NOT mention you are combining the answers.",
-  },
 ];
 
 const postAnswersContent = async (videoId, question) => [
+  {
+    role: "system",
+    content:
+      "IMPORTANT:Answer the QUESTION including the timestamp, ONLY if it's relevant.",
+  },
   ...(await loadPreviousContext(videoId, "system")),
   {
     role: "user",
-    content: `Provide an useful answer to this question: ${question}`,
+    content: `Provide an useful answer to this QUESTION by combining the Chat-GPT responses: ${question}`,
   },
 ];
 
@@ -71,7 +77,7 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
 
     const response = await getChatGptResponse(requestBody);
     if (config.DEBUG) {
-      console.log(`Unfiltered ChatGPT Response-Nr ${i}: ${response}`);
+      console.log(`UNEDITED ChatGPT ResponseNr ${i}: ${response}`);
     }
 
     answers = [...answers, response];
@@ -82,9 +88,7 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
       videoId,
       question,
       preAnswersContent,
-      answers.map(
-        (answer, i) => `Chat-GPT response number ${i + 1}: ${answer}`
-      ),
+      answers.map((answer, i) => `Chat-GPT response #${i + 1}: ${answer}`),
       postAnswersContent
     );
     const answer = await getChatGptResponse(answersRequestBody);
@@ -236,6 +240,11 @@ async function getChatGptResponse(body) {
 }
 
 async function getHttpResponse(url, method, body, token) {
+  const config = getMainConfig();
+  if (config.DEBUG) {
+    console.log(`[${method}]Request to ${url} - body: ${JSON.stringify(body)}`);
+  }
+
   const response = await fetch(url, {
     method: method,
     headers: {
@@ -245,7 +254,22 @@ async function getHttpResponse(url, method, body, token) {
     body: JSON.stringify(body),
   });
 
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `Request failed with status ${
+        response.status
+      }. Error data: ${JSON.stringify(errorData)}.`
+    );
+  }
+
   const data = await response.json();
+  if (config.DEBUG) {
+    console.log(
+      `[${method}]Response from ${url} - response: ${JSON.stringify(data)}`
+    );
+  }
+
   return data;
 }
 
