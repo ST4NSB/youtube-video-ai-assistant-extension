@@ -260,6 +260,14 @@ async function getHttpResponse(url, method, body, token) {
 
   if (!response.ok) {
     const errorData = await response.json();
+
+    if (response.status === 400) {
+      const code = errorData.error.code;
+      if (code === "context_length_exceeded") {
+        throw new Error(code);
+      }
+    }
+
     throw new Error(
       `Request failed with status ${
         response.status

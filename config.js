@@ -22,7 +22,7 @@ async function getChatGptConfigObject() {
     CHATGPT_TEMPERATURE: 0.75,
 
     PREVIOUS_CONTEXT_LIMIT: 1,
-    ANSWER_LIMIT: 300,
+    ANSWER_LIMIT: 350,
 
     CHATGPT_CHAT_API: {
       URL: "https://api.openai.com/v1/chat/completions",
@@ -44,7 +44,8 @@ function getYouTubeConfigObject() {
     DETAILED_CAPTION_TIMESTAMPS: false,
 
     // 1 token ~= 3 chars in English
-    TOKEN_MAX: 3800,
+    TOKEN_MAX: 3900,
+    TOKEN_RETRY_DESCREASE_VALUE: 150,
 
     YOUTUBE_API: {
       URL: "https://www.youtube.com/watch?v=",

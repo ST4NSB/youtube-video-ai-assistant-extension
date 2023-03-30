@@ -29,30 +29,24 @@ function createMutationObserver() {
               return;
             }
 
-            const captions = await getYoutubeVideoCaptionBuckets(videoId);
             if (config.DEBUG) {
               console.log("YouTube-VideoID:", videoId);
-              console.log("YouTube-Captions:", captions);
             }
-            if (captions.length === 0) {
-              const chatboxDiv = document.getElementById("chat-box");
-              if (chatboxDiv) {
-                chatboxDiv.remove();
-              }
-              throw new Error("Couldn't fetch the CAPTIONS of this video!");
-            }
+
+            // check if Link exists, if not, throw error
+            await getYoutubeCaptionVideoDetails(videoId);
 
             renderChatBox();
             await createChatConversation(
               videoId,
               await getAllQuestionPairs(videoId)
             );
-            renderChatGptEventListeners(videoId, captions);
+            renderChatGptEventListeners(videoId);
           }
         }
       }
     } catch (err) {
-      const msg = `Error: ${err}. - YouTube video AI assistant, main_page.js, mutationObserver.`;
+      const msg = `Error: ${err.message} - YouTube video AI assistant, main_page.js, mutationObserver.`;
       console.error(msg);
       //alert(msg);
     }

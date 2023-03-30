@@ -7,16 +7,15 @@ function getYoutubeVideoId() {
   return videoId;
 }
 
-async function getYoutubeVideoCaptionBuckets(videoId) {
+async function getYoutubeVideoCaptionBuckets(videoId, maxAllowedTokens) {
   const { title, captionsUrl } = await getYoutubeCaptionVideoDetails(videoId);
   const captions = await getYoutubeCaptionsByCaptionsUrl(captionsUrl);
 
-  const captionBuckets = getCaptionBuckets(captions, title);
+  const captionBuckets = getCaptionBuckets(captions, title, maxAllowedTokens);
   return captionBuckets;
 }
 
-function getCaptionBuckets(captions, title) {
-  const config = getYouTubeConfigObject();
+function getCaptionBuckets(captions, title, maxAllowedTokens) {
   const formattedTitle = `TITLE ${title}`;
   let buckets = [];
   let currBucket = [formattedTitle];
@@ -28,7 +27,7 @@ function getCaptionBuckets(captions, title) {
     let captionLength = getSentencesLength([caption]);
 
     // used to be: currBucket.length + 1 > bucketSize
-    if (currBucketLength + captionLength > config.TOKEN_MAX) {
+    if (currBucketLength + captionLength > maxAllowedTokens) {
       buckets = [...buckets, currBucket];
       currBucket = [formattedTitle, caption];
     } else {

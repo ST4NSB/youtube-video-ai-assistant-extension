@@ -1,13 +1,17 @@
-async function renderChatGptEventListeners(videoId, captions) {
+let captions = null;
+let previousVideoId = null;
+let maxAllowedTokens = null;
+
+async function renderChatGptEventListeners(videoId) {
   const button = document.getElementById("send-to-chat");
   button.addEventListener("click", async () => {
-    await askChatGPT(videoId, captions);
+    await askChatGPT(videoId);
   });
 
   const textInput = document.getElementById("input-text");
   textInput.addEventListener("keypress", async () => {
     if (event.keyCode === 13) {
-      await askChatGPT(videoId, captions);
+      await askChatGPT(videoId);
     }
   });
 
@@ -27,13 +31,30 @@ async function renderChatGptEventListeners(videoId, captions) {
   });
 }
 
-async function askChatGPT(videoId, captions) {
+async function askChatGPT(videoId) {
   try {
     const config = getMainConfig();
+    const youTubeConfig = getYouTubeConfigObject();
     const question = document.getElementById("input-text").value;
 
     if (!question) {
       return;
+    }
+
+    if (!captions || previousVideoId !== videoId) {
+      previousVideoId = videoId;
+      captions = await getYoutubeVideoCaptionBuckets(
+        videoId,
+        youTubeConfig.TOKEN_MAX
+      );
+
+      if (captions.length === 0) {
+        throw new Error("Couldn't fetch the CAPTIONS of this video!");
+      }
+
+      if (config.DEBUG) {
+        console.log("YouTube Captions - Loaded.");
+      }
     }
 
     const textInput = document.getElementById("input-text");
@@ -43,7 +64,31 @@ async function askChatGPT(videoId, captions) {
     sendButton.disabled = true;
     chatBotMessageBox.innerHTML = "Loading ChatGPT answer ...";
 
-    const response = await getChatGptAnswer(videoId, question, captions);
+    if (!maxAllowedTokens) {
+      maxAllowedTokens = youTubeConfig.TOKEN_MAX;
+    }
+    const retryTokenDecreaseValue = youTubeConfig.TOKEN_RETRY_DESCREASE_VALUE;
+    let response = "";
+
+    do {
+      try {
+        if (config.DEBUG) {
+          console.log("YouTube-Captions:", captions);
+        }
+        response = await getChatGptAnswer(videoId, question, captions);
+        break;
+      } catch (responseErr) {
+        if (responseErr.message === "context_length_exceeded") {
+          maxAllowedTokens = maxAllowedTokens - retryTokenDecreaseValue;
+          captions = await getYoutubeVideoCaptionBuckets(
+            videoId,
+            maxAllowedTokens
+          );
+        } else {
+          throw new Error(responseErr);
+        }
+      }
+    } while (true);
 
     textInput.disabled = false;
     sendButton.disabled = false;
@@ -60,14 +105,7 @@ async function askChatGPT(videoId, captions) {
       console.log("ChatGPT FINAL response:", response);
     }
   } catch (err) {
-    const textInput = document.getElementById("input-text");
-    const sendButton = document.getElementById("send-to-chat");
-    const chatBotMessageBox = document.getElementById("chat-response");
-    textInput.disabled = false;
-    sendButton.disabled = false;
-    chatBotMessageBox.innerHTML = "Loading ChatGPT answer ...";
-
-    const msg = `Error: ${err} - YouTube Video - AI assistant, id: send-to-chat - Event Listener.`;
+    const msg = `Error: ${err.message} - YouTube Video - AI assistant, id: send-to-chat - Event Listener.`;
     console.error(msg);
     alert(msg);
   }
