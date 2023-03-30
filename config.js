@@ -22,6 +22,7 @@ async function getChatGptConfigObject() {
     CHATGPT_TEMPERATURE: 0.75,
 
     PREVIOUS_CONTEXT_LIMIT: 1,
+    ANSWER_LIMIT: 300,
 
     CHATGPT_CHAT_API: {
       URL: "https://api.openai.com/v1/chat/completions",
@@ -33,16 +34,17 @@ async function getChatGptConfigObject() {
     },
     TIMESTAMP_EXTRACT_REGEX: /\[(\d+)\]/g,
     TIMESTAMPARRAY_EXTRACT_REGEX: /\[(\d+(?:,\s*\d+)*)\]/g,
-    TIMESTAMPRANGE_EXTRACT_REGEX: /(\d+)-(\d+)/g,
+    TIMESTAMPRANGE_EXTRACT_REGEX: /\[(\d+-\d+)\]/g,
     ...(await getEnvironmentVariables()),
   };
 }
 
 function getYouTubeConfigObject() {
   return {
-    // the number of allowed caption sentences with the format: timestamp|message
-    CAPTIONS_SENTENCES_MAX_SIZE: 220,
     DETAILED_CAPTION_TIMESTAMPS: false,
+
+    // 1 token ~= 3 chars in English
+    TOKEN_MAX: 3800,
 
     YOUTUBE_API: {
       URL: "https://www.youtube.com/watch?v=",

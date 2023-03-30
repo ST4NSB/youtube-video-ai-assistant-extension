@@ -22,6 +22,10 @@ function createMutationObserver() {
               console.error(
                 "Couldn't fetch videoId. - YouTube video AI assistant"
               );
+              const chatboxDiv = document.getElementById("chat-box");
+              if (chatboxDiv) {
+                chatboxDiv.remove();
+              }
               return;
             }
 
@@ -31,6 +35,10 @@ function createMutationObserver() {
               console.log("YouTube-Captions:", captions);
             }
             if (captions.length === 0) {
+              const chatboxDiv = document.getElementById("chat-box");
+              if (chatboxDiv) {
+                chatboxDiv.remove();
+              }
               throw new Error("Couldn't fetch the CAPTIONS of this video!");
             }
 
@@ -46,7 +54,7 @@ function createMutationObserver() {
     } catch (err) {
       const msg = `Error: ${err}. - YouTube video AI assistant, main_page.js, mutationObserver.`;
       console.error(msg);
-      alert(msg);
+      //alert(msg);
     }
   });
 

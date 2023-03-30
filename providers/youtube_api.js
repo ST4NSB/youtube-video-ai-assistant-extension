@@ -8,31 +8,29 @@ function getYoutubeVideoId() {
 }
 
 async function getYoutubeVideoCaptionBuckets(videoId) {
-  const config = getYouTubeConfigObject();
-  const { title, captionsUrl } = await getYoutubeCaptionVideoDetails(
-    videoId,
-    config
-  );
-  const captions = await getYoutubeCaptionsByCaptionsUrl(captionsUrl, config);
+  const { title, captionsUrl } = await getYoutubeCaptionVideoDetails(videoId);
+  const captions = await getYoutubeCaptionsByCaptionsUrl(captionsUrl);
 
-  const captionBuckets = getCaptionBuckets(
-    captions,
-    config.CAPTIONS_SENTENCES_MAX_SIZE,
-    `TITLE|${title}`
-  );
+  const captionBuckets = getCaptionBuckets(captions, title);
   return captionBuckets;
 }
 
-function getCaptionBuckets(captions, bucketSize, title) {
+function getCaptionBuckets(captions, title) {
+  const config = getYouTubeConfigObject();
+  const formattedTitle = `TITLE ${title}`;
   let buckets = [];
-  let currBucket = [title];
-  for (let i = 0; i < captions.length; i++) {
-    let caption = `${captions[i].start}|${captions[i].message}`;
-    let currBucketSize = currBucket.length;
+  let currBucket = [formattedTitle];
 
-    if (currBucketSize + 1 > bucketSize) {
+  for (let i = 0; i < captions.length; i++) {
+    let caption = `${captions[i].start} ${captions[i].message}`;
+
+    let currBucketLength = getSentencesLength(currBucket);
+    let captionLength = getSentencesLength([caption]);
+
+    // used to be: currBucket.length + 1 > bucketSize
+    if (currBucketLength + captionLength > config.TOKEN_MAX) {
       buckets = [...buckets, currBucket];
-      currBucket = [title, caption];
+      currBucket = [formattedTitle, caption];
     } else {
       currBucket = [...currBucket, caption];
     }
@@ -44,7 +42,26 @@ function getCaptionBuckets(captions, bucketSize, title) {
   return buckets;
 }
 
-async function getYoutubeCaptionVideoDetails(videoId, config) {
+function getSentencesLength(sentences) {
+  const maxWordValue = 3;
+
+  const result = sentences.reduce((acc, str) => {
+    const words = str.split(" ");
+    const counts = words.map((word) => {
+      if (word.length <= maxWordValue) {
+        return 1;
+      } else {
+        return Math.ceil(word.length / maxWordValue);
+      }
+    });
+    return acc + counts.reduce((acc, count) => acc + count, 0);
+  }, 0);
+
+  return result;
+}
+
+async function getYoutubeCaptionVideoDetails(videoId) {
+  const config = getYouTubeConfigObject();
   const response = await fetch(`${config.YOUTUBE_API.URL}${videoId}`, {
     method: config.YOUTUBE_API.METHOD,
   });
@@ -69,7 +86,8 @@ async function getYoutubeCaptionVideoDetails(videoId, config) {
   };
 }
 
-async function getYoutubeCaptionsByCaptionsUrl(captionsUrl, config) {
+async function getYoutubeCaptionsByCaptionsUrl(captionsUrl) {
+  const config = getYouTubeConfigObject();
   const url = changeUrlLanguageParamToEnglish(captionsUrl);
   const response = await fetch(url);
   const xmlString = await response.text();

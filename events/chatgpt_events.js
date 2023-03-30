@@ -60,6 +60,13 @@ async function askChatGPT(videoId, captions) {
       console.log("ChatGPT FINAL response:", response);
     }
   } catch (err) {
+    const textInput = document.getElementById("input-text");
+    const sendButton = document.getElementById("send-to-chat");
+    const chatBotMessageBox = document.getElementById("chat-response");
+    textInput.disabled = false;
+    sendButton.disabled = false;
+    chatBotMessageBox.innerHTML = "Loading ChatGPT answer ...";
+
     const msg = `Error: ${err} - YouTube Video - AI assistant, id: send-to-chat - Event Listener.`;
     console.error(msg);
     alert(msg);

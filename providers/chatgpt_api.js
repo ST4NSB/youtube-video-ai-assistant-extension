@@ -2,30 +2,30 @@ const preCaptionContent = [
   {
     role: "system",
     content:
-      "You are a helpful assistant.You will get a title and a few youtube captions in the format timestamp|message.After that,a QUESTION will be provided by the user.",
+      "You are a helpful assistant.You will get a title and a few youtube captions in the format: timestamp message.After that,a question will be provided by the user",
   },
   {
     role: "system",
     content:
-      "In some cases, some PREVIOUS QUESTION & ANSWER will be provided by the user, use them if necessary to get more context about the current QUESTION.",
+      "In some cases, some previous questions & answers will be provided by the user, use them if necessary to get more context about the current question",
   },
 ];
 
 const postCaptionContent = async (videoId, question) => [
   {
-    role: "system",
+    role: "user",
     content:
-      "IMPORTANT:Answer the QUESTION including the timestamp, only if it's relevant.",
+      "Answer the question including the timestamp, only if it's relevant",
   },
-  {
-    role: "system",
-    content:
-      "IMPORTANT:Any timestamp provided should be included in square brackets like: [480].",
-  },
-  ...(await loadPreviousContext(videoId, "system")),
   {
     role: "user",
-    content: `QUESTION:${question}`,
+    content:
+      "IMPORTANT:Any timestamp provided should be included in square brackets like: [480]",
+  },
+  ...(await loadPreviousContext(videoId, "user")),
+  {
+    role: "user",
+    content: `question:${question}`,
   },
 ];
 
@@ -33,30 +33,25 @@ const preAnswersContent = [
   {
     role: "system",
     content:
-      "You are a helpful assistant. You will have some Computed Results and you have to combine them in a single useful response that will answer the user's QUESTION.",
+      "You are a helpful assistant. You will have some computed results and you have to combine them in a single useful response that will answer the user's question.",
   },
   {
     role: "system",
     content:
-      "do NOT mention you are combining Chat-GPT answers/responses, just take the content and create an useful final response.",
-  },
-  {
-    role: "system",
-    content:
-      "In some cases, some PREVIOUS QUESTION & ANSWER will be provided by the user, use them if necessary to get more context about the current QUESTION.",
+      "In some cases, some previous questions & answers will be provided by the user, use them if necessary to get more context about the current question.",
   },
 ];
 
 const postAnswersContent = async (videoId, question) => [
   {
-    role: "system",
+    role: "user",
     content:
-      "IMPORTANT:Answer the QUESTION including the timestamp, ONLY if it's relevant, in the format: [timestamp]",
+      "IMPORTANT: Answer the question including the timestamp, ONLY if it's relevant, in the format: [timestamp]",
   },
-  ...(await loadPreviousContext(videoId, "system")),
+  ...(await loadPreviousContext(videoId, "user")),
   {
     role: "user",
-    content: `Provide an useful answer to this QUESTION by combining the Chat-GPT responses: ${question}`,
+    content: `Provide an useful answer, by combining the Chat-GPT computed results, to this question: ${question}`,
   },
 ];
 
@@ -294,7 +289,9 @@ async function loadPreviousContext(videoId, role) {
   const results = filteredQuestions
     .map((pair) => ({
       role: role,
-      content: `PREVIOUS QUESTION:${pair.question},PREVIOUS ANSWER:${pair.answer}.`,
+      content: `previous question:${
+        pair.question
+      },previous answer:${pair.answer.substring(0, config.ANSWER_LIMIT)}.`,
     }))
     .reverse();
 
