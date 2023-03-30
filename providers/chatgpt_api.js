@@ -15,7 +15,7 @@ const postCaptionContent = async (videoId, question) => [
   {
     role: "user",
     content:
-      "Answer the question including the timestamp, only if it's relevant",
+      "Answer the question including the timestamp, ONLY IF it's relevant to include it",
   },
   {
     role: "user",
@@ -33,7 +33,12 @@ const preAnswersContent = [
   {
     role: "system",
     content:
-      "You are a helpful assistant. You will have some computed results and you have to combine them in a single useful response that will answer the user's question.",
+      "You are a helpful assistant. You will have some computed results, these are for the SAME YOUTUBE VIDEO but different parts in the video",
+  },
+  {
+    role: "system",
+    content:
+      "You will have to combine them in a single useful response that will answer the user's question",
   },
   {
     role: "system",
@@ -46,12 +51,12 @@ const postAnswersContent = async (videoId, question) => [
   {
     role: "user",
     content:
-      "IMPORTANT: Answer the question including the timestamp, ONLY if it's relevant, in the format: [timestamp]",
+      "IMPORTANT: Answer the question including the timestamp, ONLY IF it's relevant, in the same format it was given by the computed results.",
   },
   ...(await loadPreviousContext(videoId, "user")),
   {
     role: "user",
-    content: `Provide an useful answer, by combining the Chat-GPT computed results, to this question: ${question}`,
+    content: `Provide an useful answer, by combining the Chat-GPT computed results, to answer this question: ${question}`,
   },
 ];
 
@@ -138,8 +143,8 @@ async function formatChatGptFinalResponse(videoId, response) {
 
   formattedResponse = formattedResponse.replace(
     chatGptConfig.TIMESTAMPRANGE_EXTRACT_REGEX,
-    (match, start, end) => {
-      return `${anchorTag(start)}-${anchorTag(end)}`;
+    function (match, p1, p2) {
+      return `${anchorTag(p1)} - ${anchorTag(p2)}`;
     }
   );
 
@@ -297,9 +302,12 @@ async function loadPreviousContext(videoId, role) {
   const results = filteredQuestions
     .map((pair) => ({
       role: role,
-      content: `previous question:${
+      content: `previous question asked by user:${
         pair.question
-      },previous answer:${pair.answer.substring(0, config.ANSWER_LIMIT)}.`,
+      },previous answer given by Chat-GPT:${pair.answer.substring(
+        0,
+        config.ANSWER_LIMIT
+      )}.`,
     }))
     .reverse();
 

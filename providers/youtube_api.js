@@ -16,7 +16,7 @@ async function getYoutubeVideoCaptionBuckets(videoId, maxAllowedTokens) {
 }
 
 function getCaptionBuckets(captions, title, maxAllowedTokens) {
-  const formattedTitle = `TITLE ${title}`;
+  const formattedTitle = `title: ${title}`;
   let buckets = [];
   let currBucket = [formattedTitle];
 
