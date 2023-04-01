@@ -45,7 +45,7 @@ function getYouTubeConfigObject() {
 
     // 1 token ~= 3 chars in English
     TOKEN_MAX: 3900,
-    TOKEN_RETRY_DESCREASE_VALUE: 150,
+    TOKEN_RETRY_DESCREASE_VALUE: 300,
 
     YOUTUBE_API: {
       URL: "https://www.youtube.com/watch?v=",
