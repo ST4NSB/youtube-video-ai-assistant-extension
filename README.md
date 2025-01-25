@@ -5,3 +5,16 @@ Developing a Google Chrome extension for YouTube that utilizes the captions and 
 TODO:
 
 - write documentation
+
+INSTALL:
+
+- download OLLAMA (https://ollama.com/download)
+- add
+
+'''
+[Service]
+Environment="OLLAMA_HOST=0.0.0.0"
+Environment="OLLAMA_ORIGINS=\*"  
+'''
+
+to Environment Variables (https://objectgraph.com/blog/ollama-cors/)
