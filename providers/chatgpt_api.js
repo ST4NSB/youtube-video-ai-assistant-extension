@@ -2,12 +2,12 @@ const preCaptionContent = [
   {
     role: "system",
     content:
-      "You are a helpful assistant.You will get a title and a few youtube captions in the format: timestamp message.After that,a question will be provided by the user",
+      "You are a helpful assistant.You will get a title and a few youtube captions in the format: timestamp message.After that,a question will be provided by the user.",
   },
   {
     role: "system",
     content:
-      "In some cases, some previous questions & answers will be provided by the user, use them if necessary to get more context about the current question",
+      "In some cases, some previous questions & answers will be provided by the user, use them if necessary to get more context about the current question.",
   },
 ];
 
@@ -15,12 +15,12 @@ const postCaptionContent = async (videoId, question) => [
   {
     role: "user",
     content:
-      "Answer the question including the timestamp, ONLY IF it's relevant to include it",
+      "Answer the question including the timestamp, ONLY IF it's relevant to include it.",
   },
   {
     role: "user",
     content:
-      "IMPORTANT:Any timestamp provided should be included in square brackets like: [480]",
+      "IMPORTANT:Any timestamp provided should be included in square brackets like: [480].",
   },
   ...(await loadPreviousContext(videoId, "user")),
   {
@@ -33,12 +33,12 @@ const preAnswersContent = [
   {
     role: "system",
     content:
-      "You are a helpful assistant. You will have some computed results, these are for the SAME YOUTUBE VIDEO but different parts in the video",
+      "You are a helpful assistant. You will have some computed results, these are for the SAME YOUTUBE VIDEO but different parts in the video.",
   },
   {
     role: "system",
     content:
-      "You will have to combine them in a single useful response that will answer the user's question",
+      "You will have to combine them in a single useful response that will answer the user's question.",
   },
   {
     role: "system",
@@ -56,7 +56,7 @@ const postAnswersContent = async (videoId, question) => [
   ...(await loadPreviousContext(videoId, "user")),
   {
     role: "user",
-    content: `Provide an useful answer, by combining the Chat-GPT computed results, to answer this question: ${question}`,
+    content: `Provide an useful answer, by combining the computed results, to answer this question: ${question}`,
   },
 ];
 
@@ -67,7 +67,7 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
 
   let answers = [];
   for (let i = 0; i < captionBuckets.length; i++) {
-    const requestBody = await createChatGptRequestBody(
+    const requestBody = await createAIRequestBody(
       videoId,
       question,
       preCaptionContent,
@@ -75,14 +75,14 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
       postCaptionContent
     );
 
-    const response = await getChatGptResponse(requestBody);
+    const response = await getAIResponse(requestBody);
     if (config.DEBUG) {
-      console.log(`UNEDITED ChatGPT ResponseNr ${i}: ${response}`);
+      console.log(`UNEDITED AI assistant ResponseNr ${i}: ${response}`);
     }
 
     if (captionBuckets.length > 1) {
       let chatBotMessageBox = document.getElementById("chat-response");
-      chatBotMessageBox.innerHTML = `Loading ChatGPT answers ... Loaded [${
+      chatBotMessageBox.innerHTML = `Loading AI assistant answers ... Loaded [${
         i + 1
       }/${captionBuckets.length + 1}]`;
     }
@@ -91,14 +91,14 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
   }
 
   if (answers.length > 1) {
-    const answersRequestBody = await createChatGptRequestBody(
+    const answersRequestBody = await createAIRequestBody(
       videoId,
       question,
       preAnswersContent,
       answers.map((answer, i) => `Computed Result #${i + 1}: ${answer}`),
       postAnswersContent
     );
-    const answer = await getChatGptResponse(answersRequestBody);
+    const answer = await getAIResponse(answersRequestBody);
     await saveQuestionPair(videoId, question, answer);
     return await formatChatGptFinalResponse(videoId, answer);
   }
@@ -108,7 +108,7 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
 }
 
 async function formatChatGptFinalResponse(videoId, response) {
-  const chatGptConfig = await getChatGptConfigObject();
+  const chatGptConfig = await getAIConfigObject();
   const youTubeVideoUrl = getYouTubeConfigObject().YOUTUBE_API.URL;
 
   const anchorTag = (number) =>
@@ -172,16 +172,16 @@ function parseCaptionTimeStampToYoutubeVideoTimeStamp(timestamp) {
   return convertedTimestamp;
 }
 
-async function createChatGptRequestBody(
+async function createAIRequestBody(
   videoId,
   question,
   preContentArray,
   contentArray,
   postContentArray
 ) {
-  const config = await getChatGptConfigObject();
+  const config = await getAIConfigObject();
 
-  if (config.CHATGPT_MODE === 1) {
+  if (config.AI_MODE === 1) {
     let messages = [...preContentArray];
 
     for (let i = 0; i < contentArray.length; i++) {
@@ -198,11 +198,14 @@ async function createChatGptRequestBody(
     messages = [...messages, ...(await postContentArray(videoId, question))];
 
     return {
-      model: config.CHATGPT_MODEL,
+      model: config.AI_MODEL,
       messages: messages,
-      temperature: config.CHATGPT_TEMPERATURE,
+      options: {
+        temperature: config.AI_TEMPERATURE,
+      },
+      stream: false,
     };
-  } else if (config.CHATGPT_MODE === 2) {
+  } else if (config.AI_MODE === 2) {
     let prompt = preContentArray.map((msg) => msg.content).join("");
 
     for (let i = 0; i < contentArray.length; i++) {
@@ -210,45 +213,47 @@ async function createChatGptRequestBody(
       prompt += `${caption}.`;
     }
 
-    prompt += await postContentArray(videoId, question)
-      .map((msg) => msg.content)
-      .join("");
+    const postContent = (await postContentArray(videoId, question)) || [];
+    prompt += postContent.map((msg) => msg.content).join("");
 
     return {
-      model: config.CHATGPT_MODEL,
+      model: config.AI_MODEL,
       prompt: prompt,
-      temperature: config.CHATGPT_TEMPERATURE,
+      options: {
+        temperature: config.AI_TEMPERATURE,
+      },
+      stream: false,
     };
   }
 
-  throw new Error("Unsupported ChatGPT Mode.");
+  throw new Error("Unsupported AI Mode.");
 }
 
-async function getChatGptResponse(body) {
-  const config = await getChatGptConfigObject();
+async function getAIResponse(body) {
+  const config = await getAIConfigObject();
 
-  if (config.CHATGPT_MODE === 1) {
+  if (config.AI_MODE === 1) {
     const response = await getHttpResponse(
-      config.CHATGPT_CHAT_API.URL,
-      config.CHATGPT_CHAT_API.METHOD,
-      body,
-      config.CHATGPT_KEY
+      config.AI_CHAT_API.URL,
+      config.AI_CHAT_API.METHOD,
+      body
     );
-    return response.choices[0].message.content;
-  } else if (config.CHATGPT_MODE === 2) {
+
+    return response.message.content;
+  } else if (config.AI_MODE === 2) {
     const response = await getHttpResponse(
-      config.CHATGPT_PROMPT_API.URL,
-      config.CHATGPT_PROMPT_API.METHOD,
-      body,
-      config.CHATGPT_KEY
+      config.AI_PROMPT_API.URL,
+      config.AI_PROMPT_API.METHOD,
+      body
     );
-    return response.choices[0].text;
+
+    return response.response;
   }
 
-  throw new Error("Unsupported ChatGPT Mode.");
+  throw new Error("Unsupported AI Mode.");
 }
 
-async function getHttpResponse(url, method, body, token) {
+async function getHttpResponse(url, method, body, token = null) {
   const config = getMainConfig();
   if (config.DEBUG) {
     console.log(`[${method}]Request to ${url} - body: ${JSON.stringify(body)}`);
@@ -257,7 +262,8 @@ async function getHttpResponse(url, method, body, token) {
   const response = await fetch(url, {
     method: method,
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: token !== null ? `Bearer ${token}` : null,
+      Accept: "application/json",
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
@@ -265,13 +271,6 @@ async function getHttpResponse(url, method, body, token) {
 
   if (!response.ok) {
     const errorData = await response.json();
-
-    if (response.status === 400) {
-      const code = errorData.error.code;
-      if (code === "context_length_exceeded") {
-        throw new Error(code);
-      }
-    }
 
     throw new Error(
       `Request failed with status ${
@@ -291,7 +290,7 @@ async function getHttpResponse(url, method, body, token) {
 }
 
 async function loadPreviousContext(videoId, role) {
-  const config = await getChatGptConfigObject();
+  const config = await getAIConfigObject();
   const messageHistory = await getChatGPTMessageHistory();
   const questions = [...(messageHistory[videoId] || [])].reverse();
   const filteredQuestions = questions.filter(
@@ -304,7 +303,7 @@ async function loadPreviousContext(videoId, role) {
       role: role,
       content: `previous question asked by user:${
         pair.question
-      },previous answer given by Chat-GPT:${pair.answer.substring(
+      },previous answer given by the AI assistant:${pair.answer.substring(
         0,
         config.ANSWER_LIMIT
       )}.`,

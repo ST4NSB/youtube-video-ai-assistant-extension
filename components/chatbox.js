@@ -6,7 +6,7 @@ function renderChatBox() {
 
   const input = document.createElement("input");
   input.type = "text";
-  input.placeholder = "Ask ChatGPT here";
+  input.placeholder = "Ask your AI assistant anything here..";
   input.id = "input-text";
 
   const button = document.createElement("button");
@@ -14,8 +14,9 @@ function renderChatBox() {
   button.id = "send-to-chat";
 
   const response = document.createElement("div");
-  response.innerHTML = "ChatGPT will answer your question";
+  response.innerHTML = null;
   response.id = "chat-response";
+  response.style.display = "none";
   response.readOnly = true;
 
   const textContainer = document.createElement("div");
@@ -25,12 +26,12 @@ function renderChatBox() {
 
   const historyMenu = document.createElement("div");
   historyMenu.id = "menu-history";
-  historyMenu.innerHTML = "ChatGPT History - Click to toggle";
+  historyMenu.innerHTML = "AI assistant answers history - Click to toggle";
 
   const historyDelete = document.createElement("button");
   historyDelete.id = "delete-history";
   historyDelete.innerHTML = "DELETE";
-  historyDelete.title = "Delete all ChatGPT message history.";
+  historyDelete.title = "Delete all AI assistant message history.";
 
   const historyBar = document.createElement("div");
   historyBar.id = "history-bar";
@@ -63,7 +64,7 @@ async function createChatConversation(videoId, messageHistory) {
         <span>${question}</span>
       </div>
       <div class="answer">
-        <span class="chatgpt">CHATGPT:</span>
+        <span class="chatgpt">AI assistant:</span>
         <span>${await formatChatGptFinalResponse(videoId, answer)}</span>
       </div>
     </div>`;

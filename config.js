@@ -1,41 +1,29 @@
-async function getEnvironmentVariables() {
-  const response = await fetch(chrome.runtime.getURL(".env"));
-  const text = await response.text();
-  const env = Object.fromEntries(
-    text.split("\r\n").map((line) => line.split("="))
-  );
-  return {
-    CHATGPT_KEY: env.CHATGPT_KEY,
-  };
-}
-
 function getMainConfig() {
   return {
     DEBUG: true,
   };
 }
 
-async function getChatGptConfigObject() {
+async function getAIConfigObject() {
   return {
-    CHATGPT_MODE: 1, // 1 - CHATGPT_CHAT_URL, 2 - CHATGPT_PROMPT_URL
-    CHATGPT_MODEL: "gpt-3.5-turbo", // 1 - "gpt-3.5-turbo", 2 - "text-davinci-003"
-    CHATGPT_TEMPERATURE: 0.75,
+    AI_MODE: 1, // 1 - chat with role and message, 2 - chat with prompt only
+    AI_MODEL: "llama3.2", // deepseek-r1:8b
+    AI_TEMPERATURE: 0.25,
 
     PREVIOUS_CONTEXT_LIMIT: 1,
-    ANSWER_LIMIT: 400,
+    ANSWER_LIMIT: 1200,
 
-    CHATGPT_CHAT_API: {
-      URL: "https://api.openai.com/v1/chat/completions",
+    AI_CHAT_API: {
+      URL: "http://localhost:11434/api/chat",
       METHOD: "POST",
     },
-    CHATGPT_PROMPT_API: {
-      URL: "https://api.openai.com/v1/completions",
+    AI_PROMPT_API: {
+      URL: "http://localhost:11434/api/generate",
       METHOD: "POST",
     },
     TIMESTAMP_EXTRACT_REGEX: /\[(\d+)\]/g,
     TIMESTAMPARRAY_EXTRACT_REGEX: /\[(\d+(?:,\s*\d+)*)\]/g,
     TIMESTAMPRANGE_EXTRACT_REGEX: /\[(\d+)-(\d+)\]/g,
-    ...(await getEnvironmentVariables()),
   };
 }
 
@@ -44,8 +32,8 @@ function getYouTubeConfigObject() {
     DETAILED_CAPTION_TIMESTAMPS: false,
 
     // 1 token ~= 3 chars in English
-    TOKEN_MAX: 3900,
-    TOKEN_RETRY_DESCREASE_VALUE: 300,
+    TOKEN_MAX: 25000,
+    TOKEN_RETRY_DESCREASE_VALUE: 0,
 
     YOUTUBE_API: {
       URL: "https://www.youtube.com/watch?v=",

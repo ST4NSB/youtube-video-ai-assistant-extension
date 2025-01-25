@@ -62,7 +62,8 @@ async function askChatGPT(videoId) {
     const chatBotMessageBox = document.getElementById("chat-response");
     textInput.disabled = true;
     sendButton.disabled = true;
-    chatBotMessageBox.innerHTML = "Loading ChatGPT answer ...";
+    chatBotMessageBox.style.display = "block";
+    chatBotMessageBox.innerHTML = "Loading AI assistant answer ...";
 
     if (!maxAllowedTokens) {
       maxAllowedTokens = youTubeConfig.TOKEN_MAX;
@@ -102,7 +103,7 @@ async function askChatGPT(videoId) {
     ]);
 
     if (config.DEBUG) {
-      console.log("ChatGPT FINAL response:", response);
+      console.log("AI assistant FINAL response:", response);
     }
   } catch (err) {
     const msg = `Error: ${err.message} - YouTube Video - AI assistant, id: send-to-chat - Event Listener.`;
