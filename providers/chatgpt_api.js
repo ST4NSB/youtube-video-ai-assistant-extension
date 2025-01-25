@@ -77,7 +77,7 @@ async function getChatGptAnswer(videoId, question, captionBuckets) {
 
     const response = await getAIResponse(requestBody);
     if (config.DEBUG) {
-      console.log(`UNEDITED AI assistant ResponseNr ${i}: ${response}`);
+      console.log(`UNEDITED AI assistant - ResponseNr ${i}: ${response}`);
     }
 
     if (captionBuckets.length > 1) {
