@@ -13,19 +13,19 @@ const preCaptionContent = [
 
 const postCaptionContent = async (videoId, question) => [
   {
-    role: "user",
+    role: "system",
     content:
       "Answer the question including the timestamp, ONLY IF it's relevant to include it.",
   },
   {
-    role: "user",
+    role: "system",
     content:
       "IMPORTANT:Any timestamp provided should be included in square brackets like: [480].",
   },
   ...(await loadPreviousContext(videoId, "user")),
   {
     role: "user",
-    content: `question:${question}`,
+    content: `The question is:${question}`,
   },
 ];
 

@@ -64,7 +64,7 @@ async function createChatConversation(videoId, messageHistory) {
         <span>${question}</span>
       </div>
       <div class="answer">
-        <span class="chatgpt">AI assistant:</span>
+        <span class="chatgpt">AI Assistant:</span>
         <span>${await formatChatGptFinalResponse(videoId, answer)}</span>
       </div>
     </div>`;
